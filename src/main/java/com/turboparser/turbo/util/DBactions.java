@@ -7,6 +7,8 @@ import com.turboparser.turbo.repository.VehicleArchiveRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class DBactions {
 
@@ -24,6 +26,10 @@ public class DBactions {
 
     public void insertVehicleType(CarTypeEntity carTypeEntity){
         carTypeRepository.save(carTypeEntity);
+    }
+
+    public List<CarTypeEntity> getAllVehicleTypes(){
+       return carTypeRepository.findAll();
     }
 
 }
