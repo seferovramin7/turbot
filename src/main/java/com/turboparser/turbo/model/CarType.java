@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class CarType {
-
     public String make;
     public String model;
     public String price_from;
@@ -19,5 +18,4 @@ public class CarType {
     public String mileage_to;
     public String fuel_type;
     public String transmission;
-
 }

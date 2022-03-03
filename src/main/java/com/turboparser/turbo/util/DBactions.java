@@ -23,13 +23,10 @@ public class DBactions {
             archiveRepository.save(VehicleArchive.builder().lot(lotLink).price(carPriceTotal).build());
         }
     }
-
     public void insertVehicleType(CarTypeEntity carTypeEntity){
         carTypeRepository.save(carTypeEntity);
     }
-
     public List<CarTypeEntity> getAllVehicleTypes(){
        return carTypeRepository.findAll();
     }
-
 }

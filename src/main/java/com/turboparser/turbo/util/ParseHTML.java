@@ -38,6 +38,13 @@ public class ParseHTML {
             String lotLink = "https://turbo.az/" + link;
             String carPriceTotal = carPriceString + currencyString;
 
+            System.out.println(carNameString);
+            System.out.println(carInfoString);
+            System.out.println(carDateString);
+            System.out.println(carPriceTotal);
+            System.out.println(lotLink);
+
+
             dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
         }
         return numberofCars;

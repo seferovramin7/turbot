@@ -1,11 +1,6 @@
 package com.turboparser.turbo.configuration;
 
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -17,7 +12,6 @@ import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -30,8 +24,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.transport.ProxyProvider;
+
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * - Supports both HTTP and HTTPS
@@ -134,5 +137,18 @@ public class HttpClientConfig {
                 }
             }
         };
+    }
+
+        @Bean
+        WebClient webClient(WebClient.Builder builder) {
+            HttpClient httpClient =
+                    HttpClient.create()
+                            .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP)
+                                    .host("10.0.3.18")
+                                    .port(Integer.parseInt("3128")));
+
+            ReactorClientHttpConnector conn = new ReactorClientHttpConnector(httpClient);
+
+            return builder.clientConnector(conn).build();
     }
 }
