@@ -2,9 +2,13 @@ package com.turboparser.turbo.util;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ParseHTML {
@@ -48,5 +52,31 @@ public class ParseHTML {
             dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
         }
         return numberofCars;
+    }
+
+    public void parseMakeAndModel(String rawHTML) {
+        Document doc = Jsoup.parse(rawHTML);
+        Elements make = doc.getElementsByClass("input select optional q_make");
+        String allMake = make.first().html();
+
+        Document document = Jsoup.parse(allMake);
+        Elements options = document.select("select > option");
+
+        for (Element element : options) {
+            String modelValue = element.attr("value");
+            Elements models = doc.getElementsByClass("input string optional q_model");
+            String allModels = models.first().html();
+
+            Document modelDoc = Jsoup.parse(allModels);
+            Elements modelOptions = modelDoc.select("select > option");
+            List<String> modelList = new ArrayList<>();
+            for (Element modelElement : modelOptions) {
+                if (modelElement.attr("class").equals(modelValue)) {
+                    String model = modelElement.html();
+                    modelList.add(model);
+                }
+            }
+            System.out.println(modelList);
+        }
     }
 }

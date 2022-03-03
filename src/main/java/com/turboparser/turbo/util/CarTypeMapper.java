@@ -1,9 +1,11 @@
 package com.turboparser.turbo.util;
 
 import com.turboparser.turbo.model.CarType;
+import lombok.Builder;
 import org.springframework.stereotype.Component;
 
 @Component
+@Builder
 public class CarTypeMapper {
 
     public CarType buildCar(String make, String model,

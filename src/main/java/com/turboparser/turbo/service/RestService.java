@@ -21,10 +21,16 @@ public class RestService {
     @Autowired
     ParseHTML parseHTML;
 
-    public String restService(String url) throws IOException {
+    public String generalRestService(String url) throws IOException {
         String result = restTemplate.getForObject(url, String.class);
         String s = parseHTML.parseHtml(result);
         return result;
-
     }
+
+    public String makeAndModelRestService(String url) throws IOException {
+        String result = restTemplate.getForObject(url, String.class);
+        parseHTML.parseMakeAndModel(result);
+        return result;
+    }
+
 }

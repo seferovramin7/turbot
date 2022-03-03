@@ -29,9 +29,21 @@ public class RequestCreationService {
                 "2016", "2300", "2300", "0", "150000",
                 "1", "2");
 
-        String url = urLcreator.createUrl(carType);
+        CarType emptyCarType = carTypeMapper.buildCar("2", "", "", "", "",
+                "", "", "", "", "",
+                "", "");
 
-        restService.restService(url);
+//        String url = urLcreator.createUrl(carType);
+
+        String url = urLcreator.createUrl(emptyCarType);
+
+        restService.makeAndModelRestService(url);
+//        restService.generalRestService(url);
+    }
+
+//    @Scheduled(fixedRate = 900000)
+    public void updateMakeAndModelDB() throws IOException {
+        restService.makeAndModelRestService("https://turbo.az/");
     }
 
 }
