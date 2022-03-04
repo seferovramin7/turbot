@@ -22,7 +22,7 @@ public class RequestCreationService {
     @Autowired
     RestService restService;
 
-    @Scheduled(fixedRate = 900000)
+//    @Scheduled(fixedRate = 900000)
     public void createRequest() throws IOException {
 
         CarType carType = carTypeMapper.buildCar("2", "88", "0", "100000", "2015",
@@ -41,9 +41,8 @@ public class RequestCreationService {
 //        restService.generalRestService(url);
     }
 
-//    @Scheduled(fixedRate = 900000)
+    @Scheduled(fixedRate = 900000)
     public void updateMakeAndModelDB() throws IOException {
         restService.makeAndModelRestService("https://turbo.az/");
     }
-
 }

@@ -49,9 +49,8 @@ public class BotSchedule {
 //        log.info("Passed time for home table update: " + (endTime - startTime) + " ms");
 //    }
 
-//    @Scheduled(fixedRateString = "${task.update-telegram-update.rate}")
+    @Scheduled(fixedRateString = "${task.update-telegram-update.rate}")
     public void getTelegramUpdates() {
-        System.out.println("TASK UPDATING !");
         TelegramUpdateDTO telegramUpdateDTO = telegramMessagingService.getUpdates();
         if (telegramUpdateDTO != null) {
             log.info(telegramUpdateDTO.toString());
@@ -59,10 +58,9 @@ public class BotSchedule {
         }
     }
 
-//    @Scheduled(fixedDelayString = "${task.send-new-notification.rate}")
-//    public void sendNotificationsToUsers() {
-//        List<Home> homeList = homeService.getUnsentHomes();
-//        telegramMessagingService.sendNewNotifications(homeList);
-//    }
-
+    @Scheduled(fixedDelayString = "${task.send-new-notification.rate}")
+    public void sendNotificationsToUsers() {
+        List<Home> homeList = homeService.getUnsentHomes();
+        telegramMessagingService.sendNewNotifications(homeList);
+    }
 }

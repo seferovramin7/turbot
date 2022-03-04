@@ -2,6 +2,7 @@ package com.turboparser.turbo.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.turboparser.turbo.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import com.turboparser.turbo.constant.ChatStage;
 import com.turboparser.turbo.constant.Language;
@@ -10,10 +11,6 @@ import com.turboparser.turbo.dto.telegram.send.photo.SendPhotoDTO;
 import com.turboparser.turbo.dto.telegram.send.text.SendMessageDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramResponseDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramUpdateDTO;
-import com.turboparser.turbo.entity.Chat;
-import com.turboparser.turbo.entity.City;
-import com.turboparser.turbo.entity.Home;
-import com.turboparser.turbo.entity.SearchParameter;
 import com.turboparser.turbo.service.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,6 +34,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     private final ChatDataService chatDataService;
     private final MessageProvider messageProvider;
     private final CityService cityService;
+    private final MakeService makeService;
     private final SearchParameterService searchParameterService;
     private final HomeService homeService;
 
@@ -282,6 +280,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     private SendMessageDTO getCityChoiceMessage(Long chatId, Language language) {
         int columnSize = 3;
         List<City> cityList = cityService.getCityList();
+        List<MakeEntity> modelList = makeService.getMakeList();
         int rowCount = (cityList.size()%columnSize==0) ? cityList.size()/columnSize : cityList.size()/columnSize+1;
 
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[rowCount][];

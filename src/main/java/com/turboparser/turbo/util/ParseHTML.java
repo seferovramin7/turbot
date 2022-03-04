@@ -1,14 +1,13 @@
 package com.turboparser.turbo.util;
 
+import com.turboparser.turbo.entity.MakeEntity;
+import com.turboparser.turbo.entity.ModelEntity;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class ParseHTML {
@@ -48,7 +47,6 @@ public class ParseHTML {
             System.out.println(carPriceTotal);
             System.out.println(lotLink);
 
-
             dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
         }
         return numberofCars;
@@ -63,20 +61,28 @@ public class ParseHTML {
         Elements options = document.select("select > option");
 
         for (Element element : options) {
-            String modelValue = element.attr("value");
             Elements models = doc.getElementsByClass("input string optional q_model");
             String allModels = models.first().html();
+            String modelValue = element.attr("value");
+            String markaName = element.html();
 
+//            System.out.println("Marka : " + markaName + " , MarkaId : " + modelValue);
+            if (!modelValue.equals("")) {
+                MakeEntity makeEntity = MakeEntity.builder().make(markaName).makeId(Integer.parseInt(modelValue)).build();
+                dBactions.updateMakeTable(makeEntity);
+            }
             Document modelDoc = Jsoup.parse(allModels);
             Elements modelOptions = modelDoc.select("select > option");
-            List<String> modelList = new ArrayList<>();
             for (Element modelElement : modelOptions) {
                 if (modelElement.attr("class").equals(modelValue)) {
                     String model = modelElement.html();
-                    modelList.add(model);
+//                    System.out.println("Model : " + model+ " , MarkaId : " + modelValue);
+                    if (!modelValue.equals("")) {
+                        ModelEntity modelEntity = ModelEntity.builder().modelName(model).makeId(Integer.parseInt(modelValue)).build();
+                        dBactions.updateModelTable(modelEntity);
+                    }
                 }
             }
-            System.out.println(modelList);
         }
     }
 }
