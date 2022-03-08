@@ -24,7 +24,7 @@ public interface SearchParameterRepository extends JpaRepository<SearchParameter
     @Query("select s.chat from SearchParameter s " +
             "where s.chat.chatStage = com.turboparser.turbo.constant.ChatStage.READY_RECEIVED " +
             "and " +
-            "s.city = ?1 " +
+            "s.make = ?1 " +
             "and ((s.minPrice is null and ?2 >= 0L) or (s.minPrice is not null and ?2 >= s.minPrice)) " +
             "and ((s.maxPrice is null and ?2 <= 1000000L) or (s.maxPrice is not null and ?2 <= s.maxPrice)) " +
             "and (s.numberOfRoom is null or s.numberOfRoom = ?3)")

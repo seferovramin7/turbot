@@ -78,7 +78,7 @@ public class ParseHTML {
                     String model = modelElement.html();
 //                    System.out.println("Model : " + model+ " , MarkaId : " + modelValue);
                     if (!modelValue.equals("")) {
-                        ModelEntity modelEntity = ModelEntity.builder().modelName(model).makeId(Integer.parseInt(modelValue)).build();
+                        ModelEntity modelEntity = ModelEntity.builder().model(model).makeId(Integer.parseInt(modelValue)).build();
                         dBactions.updateModelTable(modelEntity);
                     }
                 }

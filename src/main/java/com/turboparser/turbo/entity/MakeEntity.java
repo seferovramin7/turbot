@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class MakeEntity {
 
     @javax.persistence.Id
@@ -23,4 +24,12 @@ public class MakeEntity {
 
     private int makeId;
 
+    @Override
+    public String toString() {
+        return "MakeEntity{" +
+                "id=" + id +
+                ", make='" + make + '\'' +
+                ", makeId=" + makeId +
+                '}';
+    }
 }

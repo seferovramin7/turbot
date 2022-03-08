@@ -27,17 +27,15 @@ public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplate() {
 
-        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.0.3.18", 3128));
-        requestFactory.setProxy(proxy);
+//        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+//        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.0.3.18", 3128));
+//        requestFactory.setProxy(proxy);
 
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
-
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
         ClientHttpRequestInterceptor ri = new LoggingRequestInterceptor();
         List<ClientHttpRequestInterceptor> ris = new ArrayList<ClientHttpRequestInterceptor>();
         ris.add(ri);
         restTemplate.setInterceptors(ris);
-
         return restTemplate;
     }
 

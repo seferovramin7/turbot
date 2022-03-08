@@ -1,8 +1,9 @@
 package com.turboparser.turbo.service.impl;
 
 import com.turboparser.turbo.entity.MakeEntity;
-import com.turboparser.turbo.repository.TurboMakeRepository;
-import com.turboparser.turbo.service.MakeService;
+import com.turboparser.turbo.entity.ModelEntity;
+import com.turboparser.turbo.repository.TurboModelRepository;
+import com.turboparser.turbo.service.ModelService;
 import com.turboparser.turbo.service.ScrapService;
 import org.springframework.stereotype.Service;
 
@@ -11,19 +12,20 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class MakeServiceImpl implements MakeService {
+public class ModelServiceImpl implements ModelService {
 
-    private final TurboMakeRepository makeRepository;
+    private final TurboModelRepository modelRepository;
     private final ScrapService scrapService;
 
-    public MakeServiceImpl(TurboMakeRepository makeRepository, ScrapService scrapService) {
-        this.makeRepository = makeRepository;
+    public ModelServiceImpl(TurboModelRepository modelRepository, ScrapService scrapService) {
+        this.modelRepository = modelRepository;
         this.scrapService = scrapService;
     }
 
+
     @Transactional
     @Override
-    public void updateMakes() throws IOException {
+    public void updateModels() throws IOException {
 //        List<String> cityList = scrapService.getCities();
 //        long numberOfCity = makeRepository.countCities();
 //        if (numberOfCity > 0) {
@@ -51,12 +53,13 @@ public class MakeServiceImpl implements MakeService {
     }
 
     @Override
-    public List<MakeEntity> getMakeList() {
-        return makeRepository.findAll();
+    public List<ModelEntity> getModelList(int makeId) {
+        return modelRepository.getAllByMakeId(makeId);
     }
 
+
     @Override
-    public MakeEntity getMakeByMakeName(String makeName) {
-        return makeRepository.getByMake(makeName);
+    public ModelEntity getModelByModelName(String modelName) {
+        return modelRepository.getByModel(modelName);
     }
 }

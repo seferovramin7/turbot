@@ -13,8 +13,8 @@ public class SearchParameter {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
-    private com.turboparser.turbo.entity.City city;
+    @Column(name = "MAKE")
+    private String make;
 
     @Column(name = "PRICE_MIN")
     private Long minPrice;
