@@ -16,11 +16,20 @@ public class SearchParameter {
     @Column(name = "MAKE")
     private String make;
 
+    @Column(name = "MODEL")
+    private String model;
+
     @Column(name = "PRICE_MIN")
     private Long minPrice;
 
     @Column(name = "PRICE_MAX")
     private Long maxPrice;
+
+    @Column(name = "YEAR_MIN")
+    private Long minYear;
+
+    @Column(name = "YEAR_MAX")
+    private Long maxYear;
 
     @Column(name = "ROOM")
     private Long numberOfRoom;
