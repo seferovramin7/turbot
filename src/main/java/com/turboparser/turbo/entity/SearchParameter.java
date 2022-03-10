@@ -31,9 +31,6 @@ public class SearchParameter {
     @Column(name = "YEAR_MAX")
     private Long maxYear;
 
-    @Column(name = "ROOM")
-    private Long numberOfRoom;
-
     @ManyToOne
     private com.turboparser.turbo.entity.Chat chat;
 

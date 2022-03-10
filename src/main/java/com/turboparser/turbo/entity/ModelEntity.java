@@ -24,4 +24,6 @@ public class ModelEntity {
 
     private int makeId;
 
+    private int modelId;
+
 }

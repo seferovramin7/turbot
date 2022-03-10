@@ -3,7 +3,6 @@ package com.turboparser.turbo.service.impl;
 import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.repository.TurboMakeRepository;
 import com.turboparser.turbo.service.MakeService;
-import com.turboparser.turbo.service.ScrapService;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -14,11 +13,9 @@ import java.util.List;
 public class MakeServiceImpl implements MakeService {
 
     private final TurboMakeRepository makeRepository;
-    private final ScrapService scrapService;
 
-    public MakeServiceImpl(TurboMakeRepository makeRepository, ScrapService scrapService) {
+    public MakeServiceImpl(TurboMakeRepository makeRepository) {
         this.makeRepository = makeRepository;
-        this.scrapService = scrapService;
     }
 
     @Transactional

@@ -1,6 +1,5 @@
 package com.turboparser.turbo.service;
 
-import com.turboparser.turbo.entity.City;
 import com.turboparser.turbo.entity.MakeEntity;
 
 import java.io.IOException;

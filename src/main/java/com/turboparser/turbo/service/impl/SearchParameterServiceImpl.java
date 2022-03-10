@@ -1,7 +1,6 @@
 package com.turboparser.turbo.service.impl;
 
 import com.turboparser.turbo.entity.Chat;
-import com.turboparser.turbo.entity.Home;
 import com.turboparser.turbo.entity.SearchParameter;
 import com.turboparser.turbo.repository.SearchParameterRepository;
 import com.turboparser.turbo.service.SearchParameterService;
@@ -40,8 +39,4 @@ public class SearchParameterServiceImpl implements SearchParameterService {
             searchParameterRepository.delete(searchParameter);
     }
 
-    @Override
-    public List<Chat> getChatListByAppropriateParameters(Home home) {
-        return searchParameterRepository.getChatListBySearchParameters(home.getCity(), home.getPrice(), home.getNumberOfRoom());
-    }
 }

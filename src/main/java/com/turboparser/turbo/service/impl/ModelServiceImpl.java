@@ -1,10 +1,8 @@
 package com.turboparser.turbo.service.impl;
 
-import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.entity.ModelEntity;
 import com.turboparser.turbo.repository.TurboModelRepository;
 import com.turboparser.turbo.service.ModelService;
-import com.turboparser.turbo.service.ScrapService;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -15,11 +13,9 @@ import java.util.List;
 public class ModelServiceImpl implements ModelService {
 
     private final TurboModelRepository modelRepository;
-    private final ScrapService scrapService;
 
-    public ModelServiceImpl(TurboModelRepository modelRepository, ScrapService scrapService) {
+    public ModelServiceImpl(TurboModelRepository modelRepository) {
         this.modelRepository = modelRepository;
-        this.scrapService = scrapService;
     }
 
 

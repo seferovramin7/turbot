@@ -77,8 +77,13 @@ public class ParseHTML {
                 if (modelElement.attr("class").equals(modelValue)) {
                     String model = modelElement.html();
 //                    System.out.println("Model : " + model+ " , MarkaId : " + modelValue);
+                    Integer modelInt = 0;
                     if (!modelValue.equals("")) {
-                        ModelEntity modelEntity = ModelEntity.builder().model(model).makeId(Integer.parseInt(modelValue)).build();
+                        try {
+                            modelInt = Integer.valueOf(modelElement.attr("value"));
+                        } catch (NumberFormatException e) {
+                        }
+                        ModelEntity modelEntity = ModelEntity.builder().model(model).makeId(Integer.parseInt(modelValue)).modelId(Integer.valueOf(modelInt)).build();
                         dBactions.updateModelTable(modelEntity);
                     }
                 }

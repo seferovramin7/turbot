@@ -1,7 +1,12 @@
 package com.turboparser.turbo.service;
 
 
+import com.turboparser.turbo.entity.MakeEntity;
+import com.turboparser.turbo.entity.ModelEntity;
+import com.turboparser.turbo.entity.SearchParameter;
 import com.turboparser.turbo.model.CarType;
+import com.turboparser.turbo.repository.TurboMakeRepository;
+import com.turboparser.turbo.repository.TurboModelRepository;
 import com.turboparser.turbo.util.CarTypeMapper;
 import com.turboparser.turbo.util.URLcreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,23 +27,26 @@ public class RequestCreationService {
     @Autowired
     RestService restService;
 
-//    @Scheduled(fixedRate = 900000)
-    public void createRequest() throws IOException {
+    @Autowired
+    TurboMakeRepository turboMakeRepository;
 
-        CarType carType = carTypeMapper.buildCar("2", "88", "0", "100000", "2015",
-                "2016", "2300", "2300", "0", "150000",
-                "1", "2");
+    @Autowired
+    TurboModelRepository turboModelRepository;
 
-        CarType emptyCarType = carTypeMapper.buildCar("2", "", "", "", "",
-                "", "", "", "", "",
+    public void createRequest(SearchParameter searchParameter) throws IOException {
+
+
+        MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
+        String make = String.valueOf(byMake.getMakeId());
+
+        ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
+        String model = String.valueOf(byModel.getModelId());
+
+        CarType emptyCarType = carTypeMapper.buildCar(make, model, searchParameter.getMinPrice().toString(), searchParameter.getMaxPrice().toString(), searchParameter.getMinYear().toString(),
+                searchParameter.getMaxYear().toString(), "", "", "", "",
                 "", "");
-
-//        String url = urLcreator.createUrl(carType);
-
         String url = urLcreator.createUrl(emptyCarType);
-
         restService.makeAndModelRestService(url);
-//        restService.generalRestService(url);
     }
 
     @Scheduled(fixedRate = 900000)
