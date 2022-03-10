@@ -24,7 +24,7 @@ public class RestService {
     public String generalRestService(String url) throws IOException {
         String result = restTemplate.getForObject(url, String.class);
         String s = parseHTML.parseHtml(result);
-        return result;
+        return s;
     }
 
     public String makeAndModelRestService(String url) throws IOException {

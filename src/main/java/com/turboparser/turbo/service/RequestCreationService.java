@@ -34,19 +34,24 @@ public class RequestCreationService {
     TurboModelRepository turboModelRepository;
 
     public void createRequest(SearchParameter searchParameter) throws IOException {
-
-
         MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
         String make = String.valueOf(byMake.getMakeId());
 
         ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
         String model = String.valueOf(byModel.getModelId());
 
-        CarType emptyCarType = carTypeMapper.buildCar(make, model, searchParameter.getMinPrice().toString(), searchParameter.getMaxPrice().toString(), searchParameter.getMinYear().toString(),
-                searchParameter.getMaxYear().toString(), "", "", "", "",
+        CarType emptyCarType = carTypeMapper.buildCar(make, model,
+                searchParameter.getMinPrice().toString(),
+                searchParameter.getMaxPrice().toString(),
+                searchParameter.getMinYear().toString(),
+                searchParameter.getMaxYear().toString(),
+                "", "",
+                "", "",
                 "", "");
+
         String url = urLcreator.createUrl(emptyCarType);
-        restService.makeAndModelRestService(url);
+
+        restService.generalRestService(url);
     }
 
     @Scheduled(fixedRate = 900000)
