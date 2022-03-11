@@ -15,4 +15,6 @@ public interface TurboModelRepository extends JpaRepository<ModelEntity, Long> {
     ModelEntity getByModel(String model);
 
     List<ModelEntity> getAllByMakeId(int makeId);
+
+    ModelEntity getByModelAndModelIdAndMakeId(String model,int modelId, int makeId);
 }

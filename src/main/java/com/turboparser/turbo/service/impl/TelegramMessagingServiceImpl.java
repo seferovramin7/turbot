@@ -197,7 +197,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                         searchParameterService.updateSearchParameter(searchParameter);
                         chat.setChatStage(ChatStage.YEAR_MAX);
                         chatDataService.updateChat(chat);
-                        return sendMessage(getYearQuestionMessage(chatId, chat.getLanguage(), true));
+                        return sendMessage(getYearQuestionMessage(chatId, chat.getLanguage(), false));
                     } else {
                         chat.setChatStage(ChatStage.YEAR_MAX);
                         enteredNumber = Long.parseLong(text);

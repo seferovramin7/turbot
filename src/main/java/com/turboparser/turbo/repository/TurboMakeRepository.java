@@ -12,4 +12,6 @@ public interface TurboMakeRepository extends JpaRepository<MakeEntity, Long> {
     List<MakeEntity> findAll();
 
     MakeEntity getByMake(String make);
+
+    MakeEntity getByMakeAndMakeId(String make, int makeId);
 }

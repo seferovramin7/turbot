@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RequestCreationService {
@@ -36,35 +37,24 @@ public class RequestCreationService {
     @Autowired
     TurboModelRepository turboModelRepository;
 
-
-//    @Scheduled(fixedRate = 900000)
-    public void createRequest() throws IOException, ParseException {
-        CarType carType = carTypeMapper.buildCar("2", "88", "0", "100000", "2015",
-                "2016", "2300", "2300", "0", "150000",
-                "1", "2");
-
-
-        CarType prius = carTypeMapper.buildCar("1", "", "", "", "",
-                "", "", "", "", "",
-                "", "");
-
-
-        String url = urLcreator.createUrl(prius);
-        List<NotificationDTO> notificationDTOList = restService.generalRestService(url);
-        System.out.println(notificationDTOList);
-    }
-
     public List<NotificationDTO> createRequest(SearchParameter searchParameter) throws IOException, ParseException {
         MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
         String make = String.valueOf(byMake.getMakeId());
         ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
         String model = String.valueOf(byModel.getModelId());
 
-        CarType emptyCarType = carTypeMapper.buildCar(make, model,
-                searchParameter.getMinPrice().toString(),
-                searchParameter.getMaxPrice().toString(),
-                searchParameter.getMinYear().toString(),
-                searchParameter.getMaxYear().toString(),
+
+        CarType emptyCarType = carTypeMapper.buildCar(make,
+                Optional.of(model)
+                        .orElseGet(() -> ""),
+                Optional.of(searchParameter.getMinPrice().toString())
+                        .orElseGet(() -> ""),
+                Optional.of(searchParameter.getMaxPrice().toString())
+                        .orElseGet(() -> ""),
+                Optional.of(searchParameter.getMinYear().toString())
+                        .orElseGet(() -> ""),
+                Optional.of(searchParameter.getMaxYear().toString())
+                        .orElseGet(() -> ""),
                 "", "",
                 "", "",
                 "", "");
@@ -73,7 +63,8 @@ public class RequestCreationService {
         return notificationDTOList;
     }
 
-    @Scheduled(fixedRate = 900000)
+    //    @Scheduled(fixedRate = 86400000)
+    @Scheduled(fixedRate = 91111)
     public void updateMakeAndModelDB() throws IOException {
         restService.makeAndModelRestService("https://turbo.az/");
     }

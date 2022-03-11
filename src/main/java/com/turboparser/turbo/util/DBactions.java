@@ -33,18 +33,24 @@ public class DBactions {
             archiveRepository.save(VehicleArchive.builder().lot(lotLink).price(carPriceTotal).build());
         }
     }
-    public void insertVehicleType(CarTypeEntity carTypeEntity){
+
+    public void insertVehicleType(CarTypeEntity carTypeEntity) {
         carTypeRepository.save(carTypeEntity);
     }
 
-    public List<CarTypeEntity> getAllVehicleTypes(){
-       return carTypeRepository.findAll();
+    public List<CarTypeEntity> getAllVehicleTypes() {
+        return carTypeRepository.findAll();
     }
 
     public void updateMakeTable(MakeEntity makeEntity) {
-        turboMakeRepository.save(makeEntity);
+        if (turboMakeRepository.getByMakeAndMakeId(makeEntity.getMake(), makeEntity.getMakeId()) == null) {
+            turboMakeRepository.save(makeEntity);
+        }
     }
+
     public void updateModelTable(ModelEntity modelEntity) {
-        turboModelRepository.save(modelEntity);
+        if (turboModelRepository.getByModelAndModelIdAndMakeId(modelEntity.getModel(), modelEntity.getModelId(), modelEntity.getMakeId()) == null) {
+            turboModelRepository.save(modelEntity);
+        }
     }
 }
