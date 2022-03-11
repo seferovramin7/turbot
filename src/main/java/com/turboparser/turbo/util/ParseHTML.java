@@ -1,5 +1,6 @@
 package com.turboparser.turbo.util;
 
+import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.entity.ModelEntity;
 import org.jsoup.Jsoup;
@@ -7,16 +8,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ParseHTML {
@@ -24,13 +24,22 @@ public class ParseHTML {
     @Autowired
     DBactions dBactions;
 
-    public String parseHtml(String rawHTML) throws ParseException {
+    NotificationDTO notificationDTO;
+
+    @Value("${cars.from.minutes}")
+    private int minutes;
+
+    public List<NotificationDTO> parseHtml(String rawHTML) throws ParseException {
 
         Document doc = Jsoup.parse(rawHTML);
         Elements amountHTML = doc.getElementsByClass("products-title-amount");
         String numberofCars = amountHTML.first().html().split("\\s")[0];
 
-        for (int i = 0; i < Integer.valueOf(numberofCars); i++) {
+        numberofCars = (Integer.parseInt(numberofCars) > 32) ? "32" : numberofCars;
+
+        System.out.println("numberofCars : " + numberofCars);
+        List<NotificationDTO> notificationDTOList = new ArrayList<>();
+        for (int i = 0; i < Integer.valueOf(numberofCars) - 1; i++) {
             Elements carLink = doc.getElementsByClass("products-i__link");
             String link = carLink.get(i).attr("href");
 
@@ -49,24 +58,25 @@ public class ParseHTML {
 
             String lotLink = "https://turbo.az/" + link;
             String carPriceTotal = carPriceString + currencyString;
+            carPriceTotal = new StringBuilder(carPriceTotal).insert(2, ".").toString();
 
+            LocalDateTime now = LocalDateTime.now();
+            LocalTime publishTime = LocalTime.parse(carDateString.split(" ")[2]);
 
-            String now = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-            System.out.println(now);
-
-//            System.out.println(carNameString);
-//            System.out.println(carInfoString);
-            LocalTime publishTime = LocalTime.parse(carDateString.split(" ")[2]) ;
-            System.out.println(publishTime);
-
-            Duration timeElapsed = Duration.between(now, publishTime);
-
-            //            System.out.println(carPriceTotal);
-//            System.out.println(lotLink);
-
-            dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
+            Duration duration = Duration.between(publishTime, now);
+            if (duration.toMinutes() <= minutes && duration.toMinutes() > 0) {
+                notificationDTO = NotificationDTO.builder()
+                        .name(carNameString)
+                        .info(carInfoString)
+                        .price(carPriceTotal)
+                        .link(lotLink)
+                        .build();
+                notificationDTOList.add(notificationDTO);
+                String s = notificationDTO.toString();
+                dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
+            }
         }
-        return numberofCars;
+        return notificationDTOList;
     }
 
     public void parseMakeAndModel(String rawHTML) {

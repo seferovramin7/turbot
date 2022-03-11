@@ -1,11 +1,21 @@
 package com.turboparser.turbo.schedule;
 
-import lombok.extern.slf4j.Slf4j;
+import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramUpdateDTO;
+import com.turboparser.turbo.entity.SearchParameter;
+import com.turboparser.turbo.repository.SearchParameterRepository;
+import com.turboparser.turbo.service.RequestCreationService;
 import com.turboparser.turbo.service.TelegramMessagingService;
+import com.turboparser.turbo.service.impl.TelegramMessagingServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @EnableAsync
@@ -14,9 +24,18 @@ public class BotSchedule {
 
     private final TelegramMessagingService telegramMessagingService;
 
+    private final SearchParameterRepository searchParameterRepository;
+
+    private final RequestCreationService requestCreationService;
+    private final TelegramMessagingServiceImpl telegramMessagingServiceImpl;
+
+
     public BotSchedule(
-                       TelegramMessagingService telegramMessagingService) {
+            TelegramMessagingService telegramMessagingService, SearchParameterRepository searchParameterRepository, RequestCreationService requestCreationService, TelegramMessagingServiceImpl telegramMessagingServiceImpl) {
         this.telegramMessagingService = telegramMessagingService;
+        this.searchParameterRepository = searchParameterRepository;
+        this.requestCreationService = requestCreationService;
+        this.telegramMessagingServiceImpl = telegramMessagingServiceImpl;
     }
 
     @Scheduled(fixedRateString = "${task.update-telegram-update.rate}")
@@ -25,6 +44,18 @@ public class BotSchedule {
         if (telegramUpdateDTO != null) {
             log.info(telegramUpdateDTO.toString());
             telegramMessagingService.reply(telegramUpdateDTO);
+        }
+    }
+
+    @Scheduled(fixedRateString = "${task.update-cars.rate}")
+    public void checkForTurboUpdates() throws IOException, ParseException {
+        List<SearchParameter> archivedCars = searchParameterRepository.findAll();
+        for (SearchParameter element : archivedCars) {
+            List<NotificationDTO> responseList = requestCreationService.createRequest(element);
+            String listString = responseList.stream().map(Object::toString)
+                    .collect(Collectors.joining(", "));
+            telegramMessagingServiceImpl.sendMessage(telegramMessagingServiceImpl.getNewCarMessage(element.getChat().getChatId(), listString));
+
         }
     }
 }

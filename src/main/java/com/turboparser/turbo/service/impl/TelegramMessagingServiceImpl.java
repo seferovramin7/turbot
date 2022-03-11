@@ -215,10 +215,10 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                     sendMessage(getSearchParametersFinishMessage(chatId, chat.getLanguage(), searchParameter));
 
                     System.out.println("SEARCH : " + searchParameter);
-                    requestCreationService.createRequest(searchParameter);
+//                    requestCreationService.createRequest(searchParameter);
                     return sendMessage(getReadyInfoMessage(chatId, chat.getLanguage()));
 
-                } catch (NumberFormatException | IOException | ParseException ex) {
+                } catch (NumberFormatException ex) {
                     log.error("Incorrect price. Entered value: " + text);
                     sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
                     chat.setChatStage(ChatStage.YEAR_MAX);
@@ -340,6 +340,14 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(messageProvider.getMessage("ready_info", language));
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    public SendMessageDTO getNewCarMessage(Long chatId, String text) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setText(text);
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
     }

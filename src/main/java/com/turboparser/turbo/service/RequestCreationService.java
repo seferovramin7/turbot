@@ -1,6 +1,7 @@
 package com.turboparser.turbo.service;
 
 
+import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.entity.ModelEntity;
 import com.turboparser.turbo.entity.SearchParameter;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 
 @Service
 public class RequestCreationService {
@@ -35,23 +37,29 @@ public class RequestCreationService {
     TurboModelRepository turboModelRepository;
 
 
-    @Scheduled(fixedRate = 900000)
+//    @Scheduled(fixedRate = 900000)
     public void createRequest() throws IOException, ParseException {
         CarType carType = carTypeMapper.buildCar("2", "88", "0", "100000", "2015",
                 "2016", "2300", "2300", "0", "150000",
                 "1", "2");
-        String url = urLcreator.createUrl(carType);
-        restService.generalRestService(url);
+
+
+        CarType prius = carTypeMapper.buildCar("1", "", "", "", "",
+                "", "", "", "", "",
+                "", "");
+
+
+        String url = urLcreator.createUrl(prius);
+        List<NotificationDTO> notificationDTOList = restService.generalRestService(url);
+        System.out.println(notificationDTOList);
     }
 
-    public void createRequest(SearchParameter searchParameter) throws IOException, ParseException {
+    public List<NotificationDTO> createRequest(SearchParameter searchParameter) throws IOException, ParseException {
         MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
         String make = String.valueOf(byMake.getMakeId());
         ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
         String model = String.valueOf(byModel.getModelId());
-        CarType carType = carTypeMapper.buildCar("2", "88", "0", "100000", "2015",
-                "2016", "2300", "2300", "0", "150000",
-                "1", "2");
+
         CarType emptyCarType = carTypeMapper.buildCar(make, model,
                 searchParameter.getMinPrice().toString(),
                 searchParameter.getMaxPrice().toString(),
@@ -60,11 +68,12 @@ public class RequestCreationService {
                 "", "",
                 "", "",
                 "", "");
-        String url = urLcreator.createUrl(carType);
-        restService.generalRestService(url);
+        String url = urLcreator.createUrl(emptyCarType);
+        List<NotificationDTO> notificationDTOList = restService.generalRestService(url);
+        return notificationDTOList;
     }
 
-//    @Scheduled(fixedRate = 900000)
+    @Scheduled(fixedRate = 900000)
     public void updateMakeAndModelDB() throws IOException {
         restService.makeAndModelRestService("https://turbo.az/");
     }
