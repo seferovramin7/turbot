@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @Service
 public class RequestCreationService {
@@ -33,13 +34,24 @@ public class RequestCreationService {
     @Autowired
     TurboModelRepository turboModelRepository;
 
-    public void createRequest(SearchParameter searchParameter) throws IOException {
+
+    @Scheduled(fixedRate = 900000)
+    public void createRequest() throws IOException, ParseException {
+        CarType carType = carTypeMapper.buildCar("2", "88", "0", "100000", "2015",
+                "2016", "2300", "2300", "0", "150000",
+                "1", "2");
+        String url = urLcreator.createUrl(carType);
+        restService.generalRestService(url);
+    }
+
+    public void createRequest(SearchParameter searchParameter) throws IOException, ParseException {
         MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
         String make = String.valueOf(byMake.getMakeId());
-
         ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
         String model = String.valueOf(byModel.getModelId());
-
+        CarType carType = carTypeMapper.buildCar("2", "88", "0", "100000", "2015",
+                "2016", "2300", "2300", "0", "150000",
+                "1", "2");
         CarType emptyCarType = carTypeMapper.buildCar(make, model,
                 searchParameter.getMinPrice().toString(),
                 searchParameter.getMaxPrice().toString(),
@@ -48,13 +60,11 @@ public class RequestCreationService {
                 "", "",
                 "", "",
                 "", "");
-
-        String url = urLcreator.createUrl(emptyCarType);
-
+        String url = urLcreator.createUrl(carType);
         restService.generalRestService(url);
     }
 
-    @Scheduled(fixedRate = 900000)
+//    @Scheduled(fixedRate = 900000)
     public void updateMakeAndModelDB() throws IOException {
         restService.makeAndModelRestService("https://turbo.az/");
     }

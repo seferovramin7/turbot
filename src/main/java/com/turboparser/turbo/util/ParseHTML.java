@@ -9,13 +9,22 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
 @Component
 public class ParseHTML {
 
     @Autowired
     DBactions dBactions;
 
-    public String parseHtml(String rawHTML) {
+    public String parseHtml(String rawHTML) throws ParseException {
 
         Document doc = Jsoup.parse(rawHTML);
         Elements amountHTML = doc.getElementsByClass("products-title-amount");
@@ -41,11 +50,19 @@ public class ParseHTML {
             String lotLink = "https://turbo.az/" + link;
             String carPriceTotal = carPriceString + currencyString;
 
-            System.out.println(carNameString);
-            System.out.println(carInfoString);
-            System.out.println(carDateString);
-            System.out.println(carPriceTotal);
-            System.out.println(lotLink);
+
+            String now = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            System.out.println(now);
+
+//            System.out.println(carNameString);
+//            System.out.println(carInfoString);
+            LocalTime publishTime = LocalTime.parse(carDateString.split(" ")[2]) ;
+            System.out.println(publishTime);
+
+            Duration timeElapsed = Duration.between(now, publishTime);
+
+            //            System.out.println(carPriceTotal);
+//            System.out.println(lotLink);
 
             dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
         }

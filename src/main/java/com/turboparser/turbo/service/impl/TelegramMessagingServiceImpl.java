@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 @Slf4j
@@ -214,12 +215,10 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                     sendMessage(getSearchParametersFinishMessage(chatId, chat.getLanguage(), searchParameter));
 
                     System.out.println("SEARCH : " + searchParameter);
-
-
                     requestCreationService.createRequest(searchParameter);
                     return sendMessage(getReadyInfoMessage(chatId, chat.getLanguage()));
 
-                } catch (NumberFormatException | IOException ex) {
+                } catch (NumberFormatException | IOException | ParseException ex) {
                     log.error("Incorrect price. Entered value: " + text);
                     sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
                     chat.setChatStage(ChatStage.YEAR_MAX);
