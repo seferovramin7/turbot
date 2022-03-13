@@ -52,10 +52,9 @@ public class BotSchedule {
         List<SearchParameter> archivedCars = searchParameterRepository.findAll();
         for (SearchParameter element : archivedCars) {
             List<NotificationDTO> responseList = requestCreationService.createRequest(element);
-            String listString = responseList.stream().map(Object::toString)
-                    .collect(Collectors.joining(", "));
-            telegramMessagingServiceImpl.sendMessage(telegramMessagingServiceImpl.getNewCarMessage(element.getChat().getChatId(), listString));
-
-        }
+            for (NotificationDTO reponse : responseList) {
+            telegramMessagingServiceImpl.sendMessage(
+                    telegramMessagingServiceImpl.getNewCarMessage(element.getChat().getChatId(), reponse.toString()));
+        }}
     }
 }

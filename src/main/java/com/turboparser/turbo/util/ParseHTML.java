@@ -35,11 +35,11 @@ public class ParseHTML {
         Elements amountHTML = doc.getElementsByClass("products-title-amount");
         String numberofCars = amountHTML.first().html().split("\\s")[0];
 
-        numberofCars = (Integer.parseInt(numberofCars) > 32) ? "32" : numberofCars;
 
-        System.out.println("numberofCars : " + numberofCars);
+        numberofCars = (Integer.parseInt(numberofCars) > 10) ? "10" : numberofCars;
+
         List<NotificationDTO> notificationDTOList = new ArrayList<>();
-        for (int i = 0; i < Integer.valueOf(numberofCars) - 1; i++) {
+        for (int i = 0; i < Integer.valueOf(numberofCars); i++) {
             Elements carLink = doc.getElementsByClass("products-i__link");
             String link = carLink.get(i).attr("href");
 

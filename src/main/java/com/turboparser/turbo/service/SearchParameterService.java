@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface SearchParameterService {
 
-    SearchParameter getSearchParameter(Long chatId);
+    SearchParameter getSearchParameterByMaxMessageId(Long chatId);
+
+    List<SearchParameter> getSearchParameter(Long chatId);
 
     SearchParameter saveSearchParameter(SearchParameter searchParameter);
 

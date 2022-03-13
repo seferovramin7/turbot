@@ -10,7 +10,14 @@ import java.util.List;
 
 public interface SearchParameterRepository extends JpaRepository<SearchParameter, Long> {
 
+
+    List<SearchParameter> getAllByChat_ChatId(Long chatId);
+
     @Query("select s from SearchParameter s where s.chat.chatId = :chatId")
     SearchParameter getSearchParameterByChatId(@Param(("chatId")) Long chatId);
+
+    SearchParameter findFirstByChat_ChatIdOrderByMessageIdDesc(Long chatId);
+
+    List<SearchParameter> findAllByChat_ChatId(Long chatId);
 
 }

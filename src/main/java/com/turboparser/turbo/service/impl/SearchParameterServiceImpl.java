@@ -1,6 +1,5 @@
 package com.turboparser.turbo.service.impl;
 
-import com.turboparser.turbo.entity.Chat;
 import com.turboparser.turbo.entity.SearchParameter;
 import com.turboparser.turbo.repository.SearchParameterRepository;
 import com.turboparser.turbo.service.SearchParameterService;
@@ -18,8 +17,13 @@ public class SearchParameterServiceImpl implements SearchParameterService {
     }
 
     @Override
-    public SearchParameter getSearchParameter(Long chatId) {
-        return searchParameterRepository.getSearchParameterByChatId(chatId);
+    public SearchParameter getSearchParameterByMaxMessageId(Long chatId) {
+        return searchParameterRepository.findFirstByChat_ChatIdOrderByMessageIdDesc(chatId);
+    }
+
+    @Override
+    public List<SearchParameter> getSearchParameter(Long chatId) {
+        return searchParameterRepository.findAllByChat_ChatId(chatId);
     }
 
     @Override

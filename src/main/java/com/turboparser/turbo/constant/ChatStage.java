@@ -3,6 +3,7 @@ package com.turboparser.turbo.constant;
 public enum ChatStage {
 
     START,
+    DELETE,
     CAR_MAKE,
     CAR_MODEL,
     PRICE_MIN,

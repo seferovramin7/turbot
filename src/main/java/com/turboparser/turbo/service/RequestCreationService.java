@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -43,18 +44,12 @@ public class RequestCreationService {
         ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
         String model = String.valueOf(byModel.getModelId());
 
-
         CarType emptyCarType = carTypeMapper.buildCar(make,
-                Optional.of(model)
-                        .orElseGet(() -> ""),
-                Optional.of(searchParameter.getMinPrice().toString())
-                        .orElseGet(() -> ""),
-                Optional.of(searchParameter.getMaxPrice().toString())
-                        .orElseGet(() -> ""),
-                Optional.of(searchParameter.getMinYear().toString())
-                        .orElseGet(() -> ""),
-                Optional.of(searchParameter.getMaxYear().toString())
-                        .orElseGet(() -> ""),
+                Objects.toString(model, ""),
+                Objects.toString(searchParameter.getMinPrice(), ""),
+                Objects.toString(searchParameter.getMaxPrice(), ""),
+                Objects.toString(searchParameter.getMinYear(), ""),
+                Objects.toString(searchParameter.getMaxYear(), ""),
                 "", "",
                 "", "",
                 "", "");

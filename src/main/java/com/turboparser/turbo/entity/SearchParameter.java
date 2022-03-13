@@ -13,6 +13,9 @@ public class SearchParameter {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(name = "MESSAGE_ID")
+    private Long messageId;
+
     @Column(name = "MAKE")
     private String make;
 
