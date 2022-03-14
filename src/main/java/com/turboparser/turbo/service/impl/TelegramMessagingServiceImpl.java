@@ -14,6 +14,7 @@ import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.entity.ModelEntity;
 import com.turboparser.turbo.entity.SearchParameter;
 import com.turboparser.turbo.repository.SearchParameterRepository;
+import com.turboparser.turbo.repository.SpecificVehicleRepository;
 import com.turboparser.turbo.service.*;
 import com.turboparser.turbo.util.CarTypeMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     private final RequestCreationService requestCreationService;
     private final CarTypeMapper carTypeMapper;
     private final SearchParameterRepository searchParameterRepository;
+    private final SpecificVehicleRepository specificVehicleRepository;
     @Value("${telegram.api.base-url}")
     private String telegramApiBaseUrl;
     @Value("${telegram.api.token}")
@@ -52,7 +54,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                                         SearchParameterService searchParameterService,
                                         RequestCreationService requestCreationService,
                                         CarTypeMapper carTypeMapper,
-                                        SearchParameterRepository searchParameterRepository) {
+                                        SearchParameterRepository searchParameterRepository, SpecificVehicleRepository specificVehicleRepository) {
         this.httpRequestService = httpRequestService;
         this.chatDataService = chatDataService;
         this.messageProvider = messageProvider;
@@ -62,6 +64,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         this.requestCreationService = requestCreationService;
         this.carTypeMapper = carTypeMapper;
         this.searchParameterRepository = searchParameterRepository;
+        this.specificVehicleRepository = specificVehicleRepository;
     }
 
     @Override
@@ -136,7 +139,17 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             sendMessage(getResetInfoMessage(chatId, chat.getLanguage()));
         }
 
-        System.out.println("text " + text);
+        if (text.equals("/newspecific")) {
+            chat.setChatStage(ChatStage.SPECIFIC);
+            chat = chatDataService.updateChat(chat);
+            sendMessage(getSpecificInfoMessage(chatId, chat.getLanguage()));
+        } else if (chat.getChatStage() == ChatStage.SPECIFIC) {
+            System.out.println("text " + text);
+            if (specificVehicleRepository.findByLotId(text) == null) {
+                requestCreationService.
+                specificVehicleRepository.save();
+            }
+        }
 
         if (text.equals("/delete")) {
             chat.setChatStage(ChatStage.DELETE);
@@ -248,7 +261,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                         searchParameter.setMaxYear(enteredNumber);
                         chatDataService.updateChat(chat);
                         searchParameterService.updateSearchParameter(searchParameter);
-//                        return sendMessage(getYearQuestionMessage(chatId, chat.getLanguage(), true));
                     }
                     searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
                     searchParameter = searchParameterService.updateSearchParameter(searchParameter);
@@ -432,6 +444,14 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     private SendMessageDTO getResetInfoMessage(Long chatId, Language language) {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setText(messageProvider.getMessage("reset_info", language));
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    private SendMessageDTO getSpecificInfoMessage(Long chatId, Language language) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setText(messageProvider.getMessage("specific_info", language));
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
