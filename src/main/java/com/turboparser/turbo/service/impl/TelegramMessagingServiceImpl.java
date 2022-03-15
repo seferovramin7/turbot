@@ -150,55 +150,8 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             SpecificVehicle newSpecificVehicle = requestCreationService.createSpecificRequest(Long.parseLong(text));
             if (specificVehicleRepository.findByLotId(Long.parseLong(text)) == null) {
                 specificVehicleRepository.save(newSpecificVehicle);
+                sendMessage(getDeleteMessage(chatId, chat.getLanguage()));
             } else {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                DiffNode diff = ObjectDifferBuilder.buildDefault().compare(item1, item2);
-
-                if (diff.hasChanges()) {
-                    diff.visit(new DiffNode.Visitor() {
-                        public void node(DiffNode node, Visit visit)
-                        {
-                            if (!node.hasChildren()) { // Only print if the property has no child
-                                final Object oldValue = node.canonicalGet(item1);
-                                final Object newValue = node.canonicalGet(item2);
-
-                                final String message = node.getPropertyName() + " changed from " +
-                                        oldValue + " to " + newValue;
-                                System.out.println(message);
-                            }
-                        }
-                    });
-                } else {
-                    System.out.println("No differences");
-                }
-
-
-
-
-
-
-
-
-
-
-
-
                 if (newSpecificVehicle.getClass() == specificVehicleRepository.findByLotId(newSpecificVehicle.getLotId()).getClass()) {
                     System.out.println("idenatical");
                     return null;
