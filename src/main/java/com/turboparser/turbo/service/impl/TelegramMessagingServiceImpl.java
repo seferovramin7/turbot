@@ -147,17 +147,15 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             sendMessage(getSpecificInfoMessage(chatId, chat.getLanguage()));
         } else if (chat.getChatStage() == ChatStage.SPECIFIC) {
             System.out.println("text " + text);
+            SpecificVehicle newSpecificVehicle = requestCreationService.createSpecificRequest(Long.parseLong(text));
             if (specificVehicleRepository.findByLotId(Long.parseLong(text)) == null) {
-                SpecificVehicle newSpecificVehicle = requestCreationService.createSpecificRequest(Long.parseLong(text));
-                if ((specificVehicleRepository.findByLotId(newSpecificVehicle.getLotId()) == null)){
-                    specificVehicleRepository.save(newSpecificVehicle);}
-                else {
-                    if (newSpecificVehicle == specificVehicleRepository.findByLotId(newSpecificVehicle.getLotId())){
-                        System.out.println("idenatical");
-                        return null;
-                    }
+                specificVehicleRepository.save(newSpecificVehicle);
+            } else {
+                if (newSpecificVehicle == specificVehicleRepository.findByLotId(newSpecificVehicle.getLotId())) {
+                    System.out.println("idenatical");
+                    return null;
+                } else {
                     System.out.println("non idenatical");
-
                 }
             }
         }
