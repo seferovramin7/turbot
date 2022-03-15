@@ -1,10 +1,7 @@
 package com.turboparser.turbo.entity;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,14 +13,15 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder
 @Entity
+@ToString
 @Table(name="SpecificVehicle")
 public class SpecificVehicle {
 
     @javax.persistence.Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    private String carName;
-    private String name;
+    private String generalInfo;
+    private String ownerName;
     private String phone;
     private Long lotId;
     private String price;

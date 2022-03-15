@@ -9,10 +9,7 @@ import com.turboparser.turbo.dto.telegram.send.SendMessageResponseDTO;
 import com.turboparser.turbo.dto.telegram.send.text.SendMessageDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramResponseDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramUpdateDTO;
-import com.turboparser.turbo.entity.Chat;
-import com.turboparser.turbo.entity.MakeEntity;
-import com.turboparser.turbo.entity.ModelEntity;
-import com.turboparser.turbo.entity.SearchParameter;
+import com.turboparser.turbo.entity.*;
 import com.turboparser.turbo.repository.SearchParameterRepository;
 import com.turboparser.turbo.repository.SpecificVehicleRepository;
 import com.turboparser.turbo.service.*;
@@ -119,12 +116,11 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         Chat chat = chatDataService.getChatByChatId(chatId);
 
 
-
         if (text.equals("/all")) {
             searchParameterService.deleteAllByModel(null);
             List<SearchParameter> allByChatId = searchParameterRepository.getAllByChat_ChatId(chatId);
             for (SearchParameter element : allByChatId) {
-                if (element.getModel() != null){
+                if (element.getModel() != null) {
                     String allResult =
                             element.getMake() + " " + element.getModel() + "\n"
                                     + "Min : " + element.getMinPrice() + " AZN" + "\n"
@@ -132,7 +128,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                                     + "From : " + element.getMinYear() + "\n"
                                     + "To : " + element.getMaxYear();
                     sendMessage(getAllSearchMessage(chatId, allResult));
-                }else {
+                } else {
                     searchParameterRepository.deleteById(element.getId());
                 }
             }
@@ -152,8 +148,17 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         } else if (chat.getChatStage() == ChatStage.SPECIFIC) {
             System.out.println("text " + text);
             if (specificVehicleRepository.findByLotId(Long.parseLong(text)) == null) {
-                requestCreationService.createSpecificRequest(Long.parseLong(text));
-//                        specificVehicleRepository.save();
+                SpecificVehicle newSpecificVehicle = requestCreationService.createSpecificRequest(Long.parseLong(text));
+                if ((specificVehicleRepository.findByLotId(newSpecificVehicle.getLotId()) == null)){
+                    specificVehicleRepository.save(newSpecificVehicle);}
+                else {
+                    if (newSpecificVehicle == specificVehicleRepository.findByLotId(newSpecificVehicle.getLotId())){
+                        System.out.println("idenatical");
+                        return null;
+                    }
+                    System.out.println("non idenatical");
+
+                }
             }
         }
 
@@ -362,7 +367,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         for (int i = 0; i < searchParameterList.size(); i++) {
             buttons[i] = new KeyboardButtonDTO[1];
             for (int j = 0; j < 1; j++) {
-                    buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake() + " " + searchParameterList.get(i + j).getModel());
+                buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake() + " " + searchParameterList.get(i + j).getModel());
             }
         }
 

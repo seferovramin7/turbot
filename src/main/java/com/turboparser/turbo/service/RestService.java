@@ -4,6 +4,7 @@ package com.turboparser.turbo.service;
 import com.turboparser.turbo.configuration.HttpClientConfig;
 import com.turboparser.turbo.configuration.RestTemplateConfig;
 import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
+import com.turboparser.turbo.entity.SpecificVehicle;
 import com.turboparser.turbo.util.ParseHTML;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,10 +35,10 @@ public class RestService {
         }
     }
 
-    public List<NotificationDTO> specificRestService(String url) throws IOException, ParseException {
+    public SpecificVehicle specificRestService(String url, Long lotId) throws IOException, ParseException {
         String result = restTemplate.getForObject(url, String.class);
         try {
-            List<NotificationDTO> notificationDTOList = parseHTML.parseSpecificCarHTML(result);
+            SpecificVehicle notificationDTOList = parseHTML.parseSpecificCarHTML(result, lotId);
             return notificationDTOList;
         } catch (ParseException e) {
             return null;

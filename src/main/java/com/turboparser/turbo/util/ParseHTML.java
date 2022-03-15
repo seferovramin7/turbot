@@ -3,6 +3,7 @@ package com.turboparser.turbo.util;
 import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.entity.ModelEntity;
+import com.turboparser.turbo.entity.SpecificVehicle;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,30 +31,41 @@ public class ParseHTML {
     private int minutes;
 
 
-    public List<NotificationDTO> parseSpecificCarHTML(String rawHTML) throws ParseException {
+    public SpecificVehicle parseSpecificCarHTML(String rawHTML, Long lotId) throws ParseException {
+
         String carNameString = "";
         Document doc = Jsoup.parse(rawHTML);
         Elements carName = doc.getElementsByClass("product-name product-name-row");
         carNameString += carName.first().html();
-        carNameString = carNameString.replaceAll("<span class=\"nobr\">", "");
-        carNameString = carNameString.replaceAll("</span>", "");
-        System.out.println(carNameString);
+        carNameString = carNameString.replaceAll("<span class=\"nobr\">", "").replaceAll("</span>", "");
 
         String carPriceString = "";
         Elements carPrice = doc.getElementsByClass("product-price");
         carPriceString += carPrice.first().html();
-        carPriceString = carPriceString.replaceAll("<span>", "");
-        carPriceString = carPriceString.replaceAll("</span>", "");
-        System.out.println(carPriceString);
+        carPriceString = carPriceString.replaceAll("<span>", "").replaceAll("</span>", "");
 
         Elements description = doc.getElementsByClass("product-text");
         String descriptionTxt = description.first().html();
-        descriptionTxt = descriptionTxt.replaceAll("<p>", "");
-        descriptionTxt = descriptionTxt.replaceAll("</p>", "");
-        System.out.println(descriptionTxt);
+        descriptionTxt = descriptionTxt.replaceAll("<p>", "").replaceAll("</p>", "");
 
+        Elements phone = doc.getElementsByClass("phone");
+        String phoneTxt = phone.first().html();
 
-        return null;
+        Elements ownerName = doc.getElementsByClass("seller-name");
+        String ownerNameTxt = ownerName.first().html();
+        ownerNameTxt = ownerNameTxt.replaceAll("<p>", "").replaceAll("</p>", "");
+
+        SpecificVehicle specificVehicle = SpecificVehicle.builder()
+                .lotId(lotId)
+                .ownerName(ownerNameTxt)
+                .generalInfo(carNameString)
+                .price(carPriceString)
+                .phone(phoneTxt)
+                .description(descriptionTxt)
+                .build();
+
+        System.out.println(specificVehicle.toString());
+        return specificVehicle;
     }
 
 
