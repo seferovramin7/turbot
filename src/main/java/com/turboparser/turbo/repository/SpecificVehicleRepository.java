@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SpecificVehicleRepository extends JpaRepository<SpecificVehicle, Long> {
-    SpecificVehicle findByLotId(String lotId);
+    SpecificVehicle findByLotId(Long lotId);
 }

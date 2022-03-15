@@ -29,56 +29,84 @@ public class ParseHTML {
     @Value("${cars.from.minutes}")
     private int minutes;
 
+
+    public List<NotificationDTO> parseSpecificCarHTML(String rawHTML) throws ParseException {
+        String carNameString = "";
+        Document doc = Jsoup.parse(rawHTML);
+        Elements carName = doc.getElementsByClass("product-name product-name-row");
+        carNameString += carName.first().html();
+        carNameString = carNameString.replaceAll("<span class=\"nobr\">", "");
+        carNameString = carNameString.replaceAll("</span>", "");
+        System.out.println(carNameString);
+
+        String carPriceString = "";
+        Elements carPrice = doc.getElementsByClass("product-price");
+        carPriceString += carPrice.first().html();
+        carPriceString = carPriceString.replaceAll("<span>", "");
+        carPriceString = carPriceString.replaceAll("</span>", "");
+        System.out.println(carPriceString);
+
+        Elements description = doc.getElementsByClass("product-text");
+        String descriptionTxt = description.first().html();
+        descriptionTxt = descriptionTxt.replaceAll("<p>", "");
+        descriptionTxt = descriptionTxt.replaceAll("</p>", "");
+        System.out.println(descriptionTxt);
+
+
+        return null;
+    }
+
+
     public List<NotificationDTO> parseHtml(String rawHTML) throws ParseException {
 
         Document doc = Jsoup.parse(rawHTML);
         try {
 
-        Elements amountHTML = doc.getElementsByClass("products-title-amount");
-        String numberofCars = amountHTML.first().html().split("\\s")[0];
+            Elements amountHTML = doc.getElementsByClass("products-title-amount");
+            String numberofCars = amountHTML.first().html().split("\\s")[0];
 
 
-        numberofCars = (Integer.parseInt(numberofCars) > 10) ? "10" : numberofCars;
+            numberofCars = (Integer.parseInt(numberofCars) > 10) ? "10" : numberofCars;
 
-        List<NotificationDTO> notificationDTOList = new ArrayList<>();
-        for (int i = 0; i < Integer.valueOf(numberofCars); i++) {
-            Elements carLink = doc.getElementsByClass("products-i__link");
-            String link = carLink.get(i).attr("href");
+            List<NotificationDTO> notificationDTOList = new ArrayList<>();
+            for (int i = 0; i < Integer.valueOf(numberofCars); i++) {
+                Elements carLink = doc.getElementsByClass("products-i__link");
+                String link = carLink.get(i).attr("href");
 
-            Elements carPrice = doc.getElementsByClass("product-price");
-            String carPriceString = carPrice.get(i).html().trim().replaceAll(" ", "").split("<")[0];
-            String currencyString = carPrice.get(i).html().trim().replaceAll(" ", "").split(">")[1].split("<")[0];
+                Elements carPrice = doc.getElementsByClass("product-price");
+                String carPriceString = carPrice.get(i).html().trim().replaceAll(" ", "").split("<")[0];
+                String currencyString = carPrice.get(i).html().trim().replaceAll(" ", "").split(">")[1].split("<")[0];
 
-            Elements carName = doc.getElementsByClass("products-i__name products-i__bottom-text");
-            String carNameString = carName.get(i).html();
+                Elements carName = doc.getElementsByClass("products-i__name products-i__bottom-text");
+                String carNameString = carName.get(i).html();
 
-            Elements carInfo = doc.getElementsByClass("products-i__attributes products-i__bottom-text");
-            String carInfoString = carInfo.get(i).html();
+                Elements carInfo = doc.getElementsByClass("products-i__attributes products-i__bottom-text");
+                String carInfoString = carInfo.get(i).html();
 
-            Elements carDate = doc.getElementsByClass("products-i__datetime");
-            String carDateString = carDate.get(i).html();
+                Elements carDate = doc.getElementsByClass("products-i__datetime");
+                String carDateString = carDate.get(i).html();
 
-            String lotLink = "https://turbo.az/" + link;
-            String carPriceTotal = carPriceString + currencyString;
-            carPriceTotal = new StringBuilder(carPriceTotal).insert(2, ".").toString();
+                String lotLink = "https://turbo.az/" + link;
+                String carPriceTotal = carPriceString + currencyString;
+                carPriceTotal = new StringBuilder(carPriceTotal).insert(2, ".").toString();
 
-            LocalDateTime now = LocalDateTime.now();
-            LocalTime publishTime = LocalTime.parse(carDateString.split(" ")[2]);
+                LocalDateTime now = LocalDateTime.now();
+                LocalTime publishTime = LocalTime.parse(carDateString.split(" ")[2]);
 
-            Duration duration = Duration.between(publishTime, now);
-            if (duration.toMinutes() <= minutes && duration.toMinutes() > 0) {
-                notificationDTO = NotificationDTO.builder()
-                        .name(carNameString)
-                        .info(carInfoString)
-                        .price(carPriceTotal)
-                        .link(lotLink)
-                        .build();
-                notificationDTOList.add(notificationDTO);
-                String s = notificationDTO.toString();
-                dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
+                Duration duration = Duration.between(publishTime, now);
+                if (duration.toMinutes() <= minutes && duration.toMinutes() > 0) {
+                    notificationDTO = NotificationDTO.builder()
+                            .name(carNameString)
+                            .info(carInfoString)
+                            .price(carPriceTotal)
+                            .link(lotLink)
+                            .build();
+                    notificationDTOList.add(notificationDTO);
+                    String s = notificationDTO.toString();
+                    dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
+                }
             }
-        }
-        return notificationDTOList;
+            return notificationDTOList;
         } catch (NullPointerException e) {
             return null;
         }

@@ -62,23 +62,9 @@ public class RequestCreationService {
     }
 
 
-    public List<NotificationDTO> createSpecificRequest(SearchParameter searchParameter) throws IOException, ParseException {
-        MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
-        String make = String.valueOf(byMake.getMakeId());
-        ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
-        String model = String.valueOf(byModel.getModelId());
-
-        CarType emptyCarType = carTypeMapper.buildCar(make,
-                Objects.toString(model, ""),
-                Objects.toString(searchParameter.getMinPrice(), ""),
-                Objects.toString(searchParameter.getMaxPrice(), ""),
-                Objects.toString(searchParameter.getMinYear(), ""),
-                Objects.toString(searchParameter.getMaxYear(), ""),
-                "", "",
-                "", "",
-                "", "");
-        String url = urLcreator.createUrl(emptyCarType);
-        List<NotificationDTO> notificationDTOList = restService.generalRestService(url);
+    public List<NotificationDTO> createSpecificRequest(Long lotId) throws IOException, ParseException {
+        String url = urLcreator.createSpecificUrl(lotId);
+        List<NotificationDTO> notificationDTOList = restService.specificRestService(url);
         return notificationDTOList;
     }
 

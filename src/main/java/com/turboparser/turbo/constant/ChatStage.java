@@ -5,7 +5,6 @@ public enum ChatStage {
     START,
     SPECIFIC,
     DELETE,
-    SPECIFIC,
     CAR_MAKE,
     CAR_MODEL,
     PRICE_MIN,
@@ -18,9 +17,6 @@ public enum ChatStage {
     ODO_MAX,
     ODO_MIN,
     FUEL_TYPE,
-
-    CITY,
-    ROOM_NUMBER,
     READY_RECEIVED,
 
 

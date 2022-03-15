@@ -34,6 +34,16 @@ public class RestService {
         }
     }
 
+    public List<NotificationDTO> specificRestService(String url) throws IOException, ParseException {
+        String result = restTemplate.getForObject(url, String.class);
+        try {
+            List<NotificationDTO> notificationDTOList = parseHTML.parseSpecificCarHTML(result);
+            return notificationDTOList;
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     public String makeAndModelRestService(String url) throws IOException {
         String result = restTemplate.getForObject(url, String.class);
         parseHTML.parseMakeAndModel(result);

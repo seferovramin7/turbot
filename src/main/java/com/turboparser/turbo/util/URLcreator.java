@@ -6,7 +6,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class URLcreator {
 
-    public String createUrl(CarType carType) {
+    public String createSpecificUrl(Long lotId) {
+        return "https://turbo.az/autos/" + lotId;
+    }
+
+        public String createUrl(CarType carType) {
 
         String make = carType.make;
         String model = carType.model;

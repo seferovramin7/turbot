@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 @Slf4j
@@ -98,7 +100,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     }
 
     @Override
-    public SendMessageResponseDTO reply(TelegramUpdateDTO telegramUpdateDTO) {
+    public SendMessageResponseDTO reply(TelegramUpdateDTO telegramUpdateDTO) throws IOException, ParseException {
         // check it is private or group chat
         if (telegramUpdateDTO.getMessageDTO().getChat().getType().equals("group")) {
             String callName = "@" + botName;
@@ -149,9 +151,9 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             sendMessage(getSpecificInfoMessage(chatId, chat.getLanguage()));
         } else if (chat.getChatStage() == ChatStage.SPECIFIC) {
             System.out.println("text " + text);
-            if (specificVehicleRepository.findByLotId(text) == null) {
-                requestCreationService.
-                        specificVehicleRepository.save();
+            if (specificVehicleRepository.findByLotId(Long.parseLong(text)) == null) {
+                requestCreationService.createSpecificRequest(Long.parseLong(text));
+//                        specificVehicleRepository.save();
             }
         }
 

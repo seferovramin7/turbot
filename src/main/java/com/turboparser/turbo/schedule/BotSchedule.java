@@ -39,7 +39,7 @@ public class BotSchedule {
     }
 
     @Scheduled(fixedRateString = "${task.update-telegram-update.rate}")
-    public void getTelegramUpdates() {
+    public void getTelegramUpdates() throws IOException, ParseException {
         TelegramUpdateDTO telegramUpdateDTO = telegramMessagingService.getUpdates();
         if (telegramUpdateDTO != null) {
             log.info(telegramUpdateDTO.toString());
