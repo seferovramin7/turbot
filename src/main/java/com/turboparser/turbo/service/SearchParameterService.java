@@ -15,6 +15,10 @@ public interface SearchParameterService {
 
     SearchParameter updateSearchParameter(SearchParameter searchParameter);
 
+    void deleteSearchParameterByMakeAndModel(Long chatId, String make,String model);
+
     void deleteSearchParameter(Long chatId);
+
+    void deleteAllByModel(String model);
 
 }

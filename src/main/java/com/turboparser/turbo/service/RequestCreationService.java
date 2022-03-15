@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class RequestCreationService {
@@ -54,8 +53,12 @@ public class RequestCreationService {
                 "", "",
                 "", "");
         String url = urLcreator.createUrl(emptyCarType);
-        List<NotificationDTO> notificationDTOList = restService.generalRestService(url);
-        return notificationDTOList;
+        try {
+            List<NotificationDTO> notificationDTOList = restService.generalRestService(url);
+            return notificationDTOList;
+        } catch (NullPointerException e) {
+            return null;
+        }
     }
 
     //    @Scheduled(fixedRate = 86400000)

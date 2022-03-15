@@ -26,8 +26,12 @@ public class RestService {
 
     public List<NotificationDTO> generalRestService(String url) throws IOException, ParseException {
         String result = restTemplate.getForObject(url, String.class);
-        List<NotificationDTO> notificationDTOList = parseHTML.parseHtml(result);
-        return notificationDTOList;
+        try {
+            List<NotificationDTO> notificationDTOList = parseHTML.parseHtml(result);
+            return notificationDTOList;
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
     public String makeAndModelRestService(String url) throws IOException {

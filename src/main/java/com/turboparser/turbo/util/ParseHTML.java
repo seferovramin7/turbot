@@ -32,6 +32,8 @@ public class ParseHTML {
     public List<NotificationDTO> parseHtml(String rawHTML) throws ParseException {
 
         Document doc = Jsoup.parse(rawHTML);
+        try {
+
         Elements amountHTML = doc.getElementsByClass("products-title-amount");
         String numberofCars = amountHTML.first().html().split("\\s")[0];
 
@@ -77,6 +79,10 @@ public class ParseHTML {
             }
         }
         return notificationDTOList;
+        } catch (NullPointerException e) {
+            return null;
+        }
+
     }
 
     public void parseMakeAndModel(String rawHTML) {

@@ -147,7 +147,7 @@ public class HttpClientConfig {
                                     .host("10.0.3.18")
                                     .port(Integer.parseInt("3128")));
 
-            ReactorClientHttpConnector conn = new ReactorClientHttpConnector();
+            ReactorClientHttpConnector conn = new ReactorClientHttpConnector(httpClient);
 
             return builder.clientConnector(conn).build();
     }

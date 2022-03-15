@@ -16,8 +16,12 @@ public interface SearchParameterRepository extends JpaRepository<SearchParameter
     @Query("select s from SearchParameter s where s.chat.chatId = :chatId")
     SearchParameter getSearchParameterByChatId(@Param(("chatId")) Long chatId);
 
+    SearchParameter findByMakeAndModelAndChat_ChatId(String make, String model, Long id);
+
     SearchParameter findFirstByChat_ChatIdOrderByMessageIdDesc(Long chatId);
 
     List<SearchParameter> findAllByChat_ChatId(Long chatId);
+
+    List<SearchParameter> deleteAllByModel(String model);
 
 }

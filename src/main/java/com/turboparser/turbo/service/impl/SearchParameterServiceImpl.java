@@ -5,6 +5,7 @@ import com.turboparser.turbo.repository.SearchParameterRepository;
 import com.turboparser.turbo.service.SearchParameterService;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -39,6 +40,20 @@ public class SearchParameterServiceImpl implements SearchParameterService {
     @Override
     public void deleteSearchParameter(Long chatId) {
         SearchParameter searchParameter = searchParameterRepository.getSearchParameterByChatId(chatId);
+        if (searchParameter != null)
+            searchParameterRepository.delete(searchParameter);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllByModel(String model){
+        searchParameterRepository.deleteAllByModel(model);
+    }
+
+    @Override
+    public void deleteSearchParameterByMakeAndModel(Long chatId, String make, String model) {
+        SearchParameter searchParameter = searchParameterRepository.findByMakeAndModelAndChat_ChatId( make, model, chatId);
+        System.out.println("searchParameter" + searchParameter);
         if (searchParameter != null)
             searchParameterRepository.delete(searchParameter);
     }

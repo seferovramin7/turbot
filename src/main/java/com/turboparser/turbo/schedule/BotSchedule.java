@@ -51,10 +51,14 @@ public class BotSchedule {
     public void checkForTurboUpdates() throws IOException, ParseException {
         List<SearchParameter> archivedCars = searchParameterRepository.findAll();
         for (SearchParameter element : archivedCars) {
+
+            try{
             List<NotificationDTO> responseList = requestCreationService.createRequest(element);
             for (NotificationDTO reponse : responseList) {
             telegramMessagingServiceImpl.sendMessage(
                     telegramMessagingServiceImpl.getNewCarMessage(element.getChat().getChatId(), reponse.toString()));
-        }}
-    }
-}
+        }} catch (NullPointerException e) {
+                System.out.println("No any cars of this type : " + element.toString());
+            }
+        }
+}}
