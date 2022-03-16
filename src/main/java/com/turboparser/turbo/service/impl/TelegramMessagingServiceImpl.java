@@ -146,17 +146,17 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             chat = chatDataService.updateChat(chat);
             sendMessage(getSpecificInfoMessage(chatId, chat.getLanguage()));
         } else if (chat.getChatStage() == ChatStage.SPECIFIC) {
-            System.out.println("text " + text);
-            SpecificVehicle newSpecificVehicle = requestCreationService.createSpecificRequest(Long.parseLong(text));
+            SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(Long.parseLong(text));
+
+
             if (specificVehicleRepository.findByLotId(Long.parseLong(text)) == null) {
-                specificVehicleRepository.save(newSpecificVehicle);
-                sendMessage(getDeleteMessage(chatId, chat.getLanguage()));
+                specificVehicleRepository.save(newSpecificVehicleSearchParameter);
+                sendMessage(getSpecificAddMessage(chatId, chat.getLanguage(), newSpecificVehicleSearchParameter));
             } else {
-                if (newSpecificVehicle.getClass() == specificVehicleRepository.findByLotId(newSpecificVehicle.getLotId()).getClass()) {
-                    System.out.println("idenatical");
+                if (newSpecificVehicleSearchParameter.getClass() == specificVehicleRepository.findByLotId(newSpecificVehicleSearchParameter.getLotId()).getClass()) {
+                    sendMessage(getAlreadyExistisMessage(chatId, chat.getLanguage()));
                     return null;
                 }
-                System.out.println("non idenatical");
             }
         }
 
@@ -264,7 +264,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                         searchParameter.setMaxYear(enteredNumber);
                         chatDataService.updateChat(chat);
                         searchParameterService.updateSearchParameter(searchParameter);
-//                        return sendMessage(getYearQuestionMessage(chatId, chat.getLanguage(), true));
                     }
                     searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
                     searchParameter = searchParameterService.updateSearchParameter(searchParameter);
@@ -334,7 +333,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     private SendMessageDTO getModelChoiceMessage(Long chatId, Language language, int makeId) {
         int columnSize = 1;
         List<ModelEntity> modelList = modelService.getModelList(makeId);
-
         int rowCount = (modelList.size() % columnSize == 0) ? modelList.size() / columnSize : modelList.size() / columnSize + 1;
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[rowCount][];
         for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
@@ -368,7 +366,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                 buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake() + " " + searchParameterList.get(i + j).getModel());
             }
         }
-
         ReplyKeyboardMarkupDTO replyKeyboardMarkupDTO = new ReplyKeyboardMarkupDTO();
         replyKeyboardMarkupDTO.setKeyboardButtonArray(buttons);
         replyKeyboardMarkupDTO.setOneTimeKeyboard(true);
@@ -379,6 +376,21 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         return sendMessageDTO;
     }
 
+    private SendMessageDTO getSpecificAddMessage(Long chatId, Language language, SpecificVehicleSearchParameter newSpecificVehicleSearchParameter) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setText(messageProvider.getMessage("new_specific_info", language) + newSpecificVehicleSearchParameter.getGeneralInfo());
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    private SendMessageDTO getAlreadyExistisMessage(Long chatId, Language language) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setText(messageProvider.getMessage("already_exists_info", language));
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
 
     private SendMessageDTO getPriceQuestionMessage(Long chatId, Language language, boolean isLowPriceQuestion) {
         SendMessageDTO sendMessageDTO = getSkipableQuestion(language);
@@ -424,6 +436,30 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(text);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    public SendMessageDTO getNoAnyCarFoundMessage(Long chatId, Language language, String carInfo) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setText(messageProvider.getMessage("no_any_special_car_info", language) + carInfo);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    public SendMessageDTO getChangedSpecificCarMessage(Long chatId,
+                                                       SpecificVehicleSearchParameter newSpecificVehicleSearchParameter,
+                                                       SpecificVehicleSearchParameter oldSpecificVehicleSearchParameter,
+                                                       Language language) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setText(
+                messageProvider.getMessage("special_change_from_info", language)
+                        + oldSpecificVehicleSearchParameter.toString() + "\n"
+                        + messageProvider.getMessage("special_change_to_info", language)
+                        + newSpecificVehicleSearchParameter.toString()
+        );
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
     }

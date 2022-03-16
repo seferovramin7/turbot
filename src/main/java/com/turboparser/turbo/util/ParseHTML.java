@@ -3,7 +3,7 @@ package com.turboparser.turbo.util;
 import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.entity.ModelEntity;
-import com.turboparser.turbo.entity.SpecificVehicle;
+import com.turboparser.turbo.entity.SpecificVehicleSearchParameter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -31,41 +31,45 @@ public class ParseHTML {
     private int minutes;
 
 
-    public SpecificVehicle parseSpecificCarHTML(String rawHTML, Long lotId) throws ParseException {
+    public SpecificVehicleSearchParameter parseSpecificCarHTML(String rawHTML, Long lotId) throws ParseException {
+        try {
+            String carNameString = "";
+            Document doc = Jsoup.parse(rawHTML);
+            Elements carName = doc.getElementsByClass("product-name product-name-row");
+            carNameString += carName.first().html();
+            carNameString = carNameString.replaceAll("<span class=\"nobr\">", "").replaceAll("</span>", "");
 
-        String carNameString = "";
-        Document doc = Jsoup.parse(rawHTML);
-        Elements carName = doc.getElementsByClass("product-name product-name-row");
-        carNameString += carName.first().html();
-        carNameString = carNameString.replaceAll("<span class=\"nobr\">", "").replaceAll("</span>", "");
+            String carPriceString = "";
+            Elements carPrice = doc.getElementsByClass("product-price");
+            carPriceString += carPrice.first().html();
+            carPriceString = carPriceString.replaceAll("<span>", "").replaceAll("</span>", "");
 
-        String carPriceString = "";
-        Elements carPrice = doc.getElementsByClass("product-price");
-        carPriceString += carPrice.first().html();
-        carPriceString = carPriceString.replaceAll("<span>", "").replaceAll("</span>", "");
+            Elements description = doc.getElementsByClass("product-text");
+            String descriptionTxt = description.first().html();
+            descriptionTxt = descriptionTxt.replaceAll("<p>", "").replaceAll("</p>", "");
 
-        Elements description = doc.getElementsByClass("product-text");
-        String descriptionTxt = description.first().html();
-        descriptionTxt = descriptionTxt.replaceAll("<p>", "").replaceAll("</p>", "");
+            Elements phone = doc.getElementsByClass("phone");
+            String phoneTxt = phone.first().html();
 
-        Elements phone = doc.getElementsByClass("phone");
-        String phoneTxt = phone.first().html();
+            Elements ownerName = doc.getElementsByClass("seller-name");
+            String ownerNameTxt = ownerName.first().html();
+            ownerNameTxt = ownerNameTxt.replaceAll("<p>", "").replaceAll("</p>", "");
 
-        Elements ownerName = doc.getElementsByClass("seller-name");
-        String ownerNameTxt = ownerName.first().html();
-        ownerNameTxt = ownerNameTxt.replaceAll("<p>", "").replaceAll("</p>", "");
+            SpecificVehicleSearchParameter specificVehicleSearchParameter = SpecificVehicleSearchParameter.builder()
+                    .lotId(lotId)
+                    .ownerName(ownerNameTxt)
+                    .generalInfo(carNameString)
+                    .price(carPriceString)
+                    .phone(phoneTxt)
+                    .description(descriptionTxt)
+                    .build();
 
-        SpecificVehicle specificVehicle = SpecificVehicle.builder()
-                .lotId(lotId)
-                .ownerName(ownerNameTxt)
-                .generalInfo(carNameString)
-                .price(carPriceString)
-                .phone(phoneTxt)
-                .description(descriptionTxt)
-                .build();
-
-        System.out.println(specificVehicle.toString());
-        return specificVehicle;
+            System.out.println(specificVehicleSearchParameter.toString());
+            return specificVehicleSearchParameter;
+        } catch (NullPointerException e) {
+            System.out.println("Car couldn't found");
+            return null;
+        }
     }
 
 

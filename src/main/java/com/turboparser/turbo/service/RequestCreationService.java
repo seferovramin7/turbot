@@ -5,7 +5,7 @@ import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.entity.ModelEntity;
 import com.turboparser.turbo.entity.SearchParameter;
-import com.turboparser.turbo.entity.SpecificVehicle;
+import com.turboparser.turbo.entity.SpecificVehicleSearchParameter;
 import com.turboparser.turbo.model.CarType;
 import com.turboparser.turbo.repository.TurboMakeRepository;
 import com.turboparser.turbo.repository.TurboModelRepository;
@@ -63,10 +63,10 @@ public class RequestCreationService {
     }
 
 
-    public SpecificVehicle createSpecificRequest(Long lotId) throws IOException, ParseException {
+    public SpecificVehicleSearchParameter createSpecificRequest(Long lotId) throws IOException, ParseException {
         String url = urLcreator.createSpecificUrl(lotId);
-        SpecificVehicle notificationDTOList = restService.specificRestService(url, lotId);
-        return notificationDTOList;
+        SpecificVehicleSearchParameter specificVehicleSearchParameter = restService.specificRestService(url, lotId);
+        return specificVehicleSearchParameter;
     }
 
 
