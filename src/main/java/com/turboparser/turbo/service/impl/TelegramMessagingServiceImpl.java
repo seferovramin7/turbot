@@ -116,6 +116,31 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         Chat chat = chatDataService.getChatByChatId(chatId);
 
 
+        if (text.equals("/language")) {
+            sendMessage(getLanguageChoiceMessage(chatId));
+            chat.setChatStage(ChatStage.LANGUAGE);
+            chat = chatDataService.updateChat(chat);
+        } else if (chat.getChatStage() == ChatStage.LANGUAGE) {
+            if (text.equals("azərbaycanca") || text.equals("english") || text.equals("русский")) {
+                switch (text) {
+                    case "azərbaycanca":
+                        chat.setLanguage(Language.az);
+                        chat = chatDataService.updateChat(chat);
+                        break;
+                    case "русский":
+                        chat.setLanguage(Language.ru);
+                        chat = chatDataService.updateChat(chat);
+                        break;
+                    case "english":
+                        chat.setLanguage(Language.en);
+                        chat = chatDataService.updateChat(chat);
+                        break;
+                }
+                return sendMessage(getLanguageMessage(chatId, chat.getLanguage()));
+            }
+        }
+
+
         if (text.equals("/all")) {
             searchParameterService.deleteAllByModel(null);
             List<SearchParameter> allByChatId = searchParameterRepository.getAllByChat_ChatId(chatId);
@@ -138,7 +163,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         if (text.equals("/new")) {
             chat.setChatStage(ChatStage.START);
             chat = chatDataService.updateChat(chat);
-            sendMessage(getResetInfoMessage(chatId, chat.getLanguage()));
         }
 
         if (text.equals("/newspecific")) {
@@ -146,17 +170,19 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             chat = chatDataService.updateChat(chat);
             sendMessage(getSpecificInfoMessage(chatId, chat.getLanguage()));
         } else if (chat.getChatStage() == ChatStage.SPECIFIC) {
-            SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(Long.parseLong(text));
-
-
-            if (specificVehicleRepository.findByLotId(Long.parseLong(text)) == null) {
-                specificVehicleRepository.save(newSpecificVehicleSearchParameter);
-                sendMessage(getSpecificAddMessage(chatId, chat.getLanguage(), newSpecificVehicleSearchParameter));
-            } else {
-                if (newSpecificVehicleSearchParameter.getClass() == specificVehicleRepository.findByLotId(newSpecificVehicleSearchParameter.getLotId()).getClass()) {
-                    sendMessage(getAlreadyExistisMessage(chatId, chat.getLanguage()));
-                    return null;
+            SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(text);
+            if (newSpecificVehicleSearchParameter != null) {
+                if (specificVehicleRepository.findByLotId(text) == null) {
+                    specificVehicleRepository.save(newSpecificVehicleSearchParameter);
+                    sendMessage(getSpecificAddMessage(chatId, chat.getLanguage(), newSpecificVehicleSearchParameter));
+                } else {
+                    if (newSpecificVehicleSearchParameter.getClass() == specificVehicleRepository.findByLotId(newSpecificVehicleSearchParameter.getLotId()).getClass()) {
+                        sendMessage(getAlreadyExistisMessage(chatId, chat.getLanguage()));
+                        return null;
+                    }
                 }
+            } else {
+                sendMessage(notFoundAnySpecialCar(chatId, chat.getLanguage()));
             }
         }
 
@@ -176,16 +202,9 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         }
 
         if (chat.getChatStage() == ChatStage.START) {
-            if (!(text.equals("azərbaycanca") || text.equals("русский") || text.equals("english"))) {
-                return sendMessage(getLanguageChoiceMessage(chatId));
-            } else {
-                if (text.equals("azərbaycanca")) chat.setLanguage(Language.az);
-                else if (text.equals("english")) chat.setLanguage(Language.en);
-                else chat.setLanguage(Language.ru);
                 chat.setChatStage(ChatStage.CAR_MAKE);
                 chat = chatDataService.updateChat(chat);
                 return sendMessage(getMakeChoiceMessage(chatId, chat.getLanguage()));
-            }
         }
         // Make select
         else if (chat.getChatStage() == ChatStage.CAR_MAKE) {
@@ -378,7 +397,15 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
 
     private SendMessageDTO getSpecificAddMessage(Long chatId, Language language, SpecificVehicleSearchParameter newSpecificVehicleSearchParameter) {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
-        sendMessageDTO.setText(messageProvider.getMessage("new_specific_info", language) + newSpecificVehicleSearchParameter.getGeneralInfo());
+        sendMessageDTO.setText(messageProvider.getMessage("new_specific_info", language) + "\n" +newSpecificVehicleSearchParameter.getGeneralInfo().replaceAll(", ", "\n"));
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    private SendMessageDTO getLanguageMessage(Long chatId, Language language) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setText(messageProvider.getMessage("language_choice", language));
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
@@ -448,6 +475,14 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         return sendMessageDTO;
     }
 
+    public SendMessageDTO notFoundAnySpecialCar(Long chatId, Language language) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setText(messageProvider.getMessage("car_not_found", language));
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
     public SendMessageDTO getChangedSpecificCarMessage(Long chatId,
                                                        SpecificVehicleSearchParameter newSpecificVehicleSearchParameter,
                                                        SpecificVehicleSearchParameter oldSpecificVehicleSearchParameter,
@@ -472,13 +507,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         return sendMessageDTO;
     }
 
-    private SendMessageDTO getResetInfoMessage(Long chatId, Language language) {
-        SendMessageDTO sendMessageDTO = new SendMessageDTO();
-        sendMessageDTO.setText(messageProvider.getMessage("reset_info", language));
-        sendMessageDTO.setChatId(chatId);
-        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
-        return sendMessageDTO;
-    }
+
 
     private SendMessageDTO getSpecificInfoMessage(Long chatId, Language language) {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();

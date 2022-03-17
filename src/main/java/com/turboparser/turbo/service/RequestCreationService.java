@@ -63,9 +63,9 @@ public class RequestCreationService {
     }
 
 
-    public SpecificVehicleSearchParameter createSpecificRequest(Long lotId) throws IOException, ParseException {
-        String url = urLcreator.createSpecificUrl(lotId);
-        SpecificVehicleSearchParameter specificVehicleSearchParameter = restService.specificRestService(url, lotId);
+    public SpecificVehicleSearchParameter createSpecificRequest(String link) throws IOException, ParseException {
+//        String url = urLcreator.createSpecificUrl(link);
+        SpecificVehicleSearchParameter specificVehicleSearchParameter = restService.specificRestService(link);
         return specificVehicleSearchParameter;
     }
 

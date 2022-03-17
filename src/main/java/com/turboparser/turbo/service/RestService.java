@@ -35,10 +35,10 @@ public class RestService {
         }
     }
 
-    public SpecificVehicleSearchParameter specificRestService(String url, Long lotId) throws IOException, ParseException {
-        String result = restTemplate.getForObject(url, String.class);
+    public SpecificVehicleSearchParameter specificRestService(String link) throws IOException, ParseException {
+        String result = restTemplate.getForObject(link, String.class);
         try {
-            SpecificVehicleSearchParameter specificVehicleSearchParameter = parseHTML.parseSpecificCarHTML(result, lotId);
+            SpecificVehicleSearchParameter specificVehicleSearchParameter = parseHTML.parseSpecificCarHTML(result);
             return specificVehicleSearchParameter;
         } catch (ParseException e) {
             return null;

@@ -31,10 +31,15 @@ public class ParseHTML {
     private int minutes;
 
 
-    public SpecificVehicleSearchParameter parseSpecificCarHTML(String rawHTML, Long lotId) throws ParseException {
+    public SpecificVehicleSearchParameter parseSpecificCarHTML(String rawHTML) throws ParseException {
         try {
             String carNameString = "";
             Document doc = Jsoup.parse(rawHTML);
+
+            Elements carLot = doc.getElementsByClass("product-statistics");
+            String carLotString = carLot.first().html();
+            carLotString = carLotString.split(":")[3].trim().replaceAll("</p>", "");
+
             Elements carName = doc.getElementsByClass("product-name product-name-row");
             carNameString += carName.first().html();
             carNameString = carNameString.replaceAll("<span class=\"nobr\">", "").replaceAll("</span>", "");
@@ -44,10 +49,6 @@ public class ParseHTML {
             carPriceString += carPrice.first().html();
             carPriceString = carPriceString.replaceAll("<span>", "").replaceAll("</span>", "");
 
-            Elements description = doc.getElementsByClass("product-text");
-            String descriptionTxt = description.first().html();
-            descriptionTxt = descriptionTxt.replaceAll("<p>", "").replaceAll("</p>", "");
-
             Elements phone = doc.getElementsByClass("phone");
             String phoneTxt = phone.first().html();
 
@@ -56,12 +57,11 @@ public class ParseHTML {
             ownerNameTxt = ownerNameTxt.replaceAll("<p>", "").replaceAll("</p>", "");
 
             SpecificVehicleSearchParameter specificVehicleSearchParameter = SpecificVehicleSearchParameter.builder()
-                    .lotId(lotId)
+                    .lotId(carLotString)
                     .ownerName(ownerNameTxt)
                     .generalInfo(carNameString)
                     .price(carPriceString)
                     .phone(phoneTxt)
-                    .description(descriptionTxt)
                     .build();
 
             System.out.println(specificVehicleSearchParameter.toString());
@@ -108,9 +108,10 @@ public class ParseHTML {
 
                 LocalDateTime now = LocalDateTime.now();
                 LocalTime publishTime = LocalTime.parse(carDateString.split(" ")[2]);
+                LocalTime publishDay = LocalTime.parse(carDateString.split(" ")[1]);
 
                 Duration duration = Duration.between(publishTime, now);
-                if (duration.toMinutes() <= minutes && duration.toMinutes() > 0) {
+                if (publishDay.equals("bugün") && duration.toMinutes() <= minutes && duration.toMinutes() > 0) {
                     notificationDTO = NotificationDTO.builder()
                             .name(carNameString)
                             .info(carInfoString)

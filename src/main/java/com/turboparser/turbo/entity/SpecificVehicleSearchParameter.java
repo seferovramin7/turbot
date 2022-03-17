@@ -30,11 +30,9 @@ public class SpecificVehicleSearchParameter {
     @Column(name = "PHONE")
     private String phone;
     @Column(name = "LOT_ID")
-    private Long lotId;
+    private String lotId;
     @Column(name = "PRICE")
     private String price;
-    @Column(name = "DESCRIPTION")
-    private String description;
     @ManyToOne
     private com.turboparser.turbo.entity.Chat chat;
 
@@ -45,7 +43,6 @@ public class SpecificVehicleSearchParameter {
                         ownerName + '\n' +
                         phone + '\n' +
                         lotId +
-                        price + '\n' +
-                        description;
+                        price;
     }
 }

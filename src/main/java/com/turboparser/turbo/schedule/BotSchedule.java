@@ -10,6 +10,7 @@ import com.turboparser.turbo.service.RequestCreationService;
 import com.turboparser.turbo.service.TelegramMessagingService;
 import com.turboparser.turbo.service.impl.TelegramMessagingServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,12 +25,12 @@ import java.util.List;
 public class BotSchedule {
 
     private final TelegramMessagingService telegramMessagingService;
-
     private final SearchParameterRepository searchParameterRepository;
-
     private final RequestCreationService requestCreationService;
     private final TelegramMessagingServiceImpl telegramMessagingServiceImpl;
     private final SpecificVehicleRepository specificVehicleRepository;
+    @Value("${turbo.url}")
+    private String turboLink;
 
     public BotSchedule(
             TelegramMessagingService telegramMessagingService, SearchParameterRepository searchParameterRepository, RequestCreationService requestCreationService, TelegramMessagingServiceImpl telegramMessagingServiceImpl, SpecificVehicleRepository specificVehicleRepository) {
@@ -69,7 +70,7 @@ public class BotSchedule {
         List<SpecificVehicleSearchParameter> archivedCars = specificVehicleRepository.findAll();
         for (SpecificVehicleSearchParameter element : archivedCars) {
             try {
-                SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(element.getLotId());
+                SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(turboLink +  element.getLotId());
                 if (newSpecificVehicleSearchParameter == null) {
                     telegramMessagingServiceImpl.sendMessage(
                             telegramMessagingServiceImpl.getNoAnyCarFoundMessage(element.getChat().getChatId(), element.getChat().getLanguage(), element.getGeneralInfo()));
