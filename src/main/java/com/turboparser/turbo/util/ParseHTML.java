@@ -39,6 +39,7 @@ public class ParseHTML {
             Elements carLot = doc.getElementsByClass("product-statistics");
             String carLotString = carLot.first().html();
             carLotString = carLotString.split(":")[3].trim().replaceAll("</p>", "");
+            long carLotLong = Long.parseLong(carLotString);
 
             Elements carName = doc.getElementsByClass("product-name product-name-row");
             carNameString += carName.first().html();
@@ -49,19 +50,10 @@ public class ParseHTML {
             carPriceString += carPrice.first().html();
             carPriceString = carPriceString.replaceAll("<span>", "").replaceAll("</span>", "");
 
-            Elements phone = doc.getElementsByClass("phone");
-            String phoneTxt = phone.first().html();
-
-            Elements ownerName = doc.getElementsByClass("seller-name");
-            String ownerNameTxt = ownerName.first().html();
-            ownerNameTxt = ownerNameTxt.replaceAll("<p>", "").replaceAll("</p>", "");
-
             SpecificVehicleSearchParameter specificVehicleSearchParameter = SpecificVehicleSearchParameter.builder()
-                    .lotId(carLotString)
-                    .ownerName(ownerNameTxt)
+                    .lotId(carLotLong)
                     .generalInfo(carNameString)
                     .price(carPriceString)
-                    .phone(phoneTxt)
                     .build();
 
             System.out.println(specificVehicleSearchParameter.toString());

@@ -70,28 +70,27 @@ public class BotSchedule {
         List<SpecificVehicleSearchParameter> archivedCars = specificVehicleRepository.findAll();
         for (SpecificVehicleSearchParameter element : archivedCars) {
             try {
-                SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(turboLink +  element.getLotId());
-                if (newSpecificVehicleSearchParameter == null) {
+            SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(turboLink + element.getLotId());
+            if (newSpecificVehicleSearchParameter == null) {
+                telegramMessagingServiceImpl.sendMessage(
+                        telegramMessagingServiceImpl.getNoAnyCarFoundMessage(element.getChat().getChatId(), element.getChat().getLanguage(), element.getGeneralInfo()));
+            } else {
+                SpecificVehicleSearchParameter oldSpecificVehicleSearchParameter = specificVehicleRepository.findTopByLotId(element.getLotId());
+                if (!oldSpecificVehicleSearchParameter.getPrice().equals(newSpecificVehicleSearchParameter.getPrice())
+                        ||
+                        !oldSpecificVehicleSearchParameter.getGeneralInfo().equals(newSpecificVehicleSearchParameter.getGeneralInfo())
+                ) {
                     telegramMessagingServiceImpl.sendMessage(
-                            telegramMessagingServiceImpl.getNoAnyCarFoundMessage(element.getChat().getChatId(), element.getChat().getLanguage(), element.getGeneralInfo()));
-                } else {
-                    SpecificVehicleSearchParameter oldSpecificVehicleSearchParameter = specificVehicleRepository.findByIdOrderByLotIdAsc(element.getLotId());
-                    System.out.println(oldSpecificVehicleSearchParameter);
-                    if (oldSpecificVehicleSearchParameter == newSpecificVehicleSearchParameter) {
-                        System.out.println("The same exact vehicle");
-                    } else {
-                        telegramMessagingServiceImpl.sendMessage(
-                                telegramMessagingServiceImpl.getChangedSpecificCarMessage(element.getChat().getChatId(),
-                                        newSpecificVehicleSearchParameter,
-                                        oldSpecificVehicleSearchParameter,
-                                        element.getChat().getLanguage()));
-                    }
+                            telegramMessagingServiceImpl.getChangedSpecificCarMessage(element.getChat().getChatId(),
+                                    newSpecificVehicleSearchParameter,
+                                    oldSpecificVehicleSearchParameter,
+                                    element.getChat().getLanguage()));
+                    telegramMessagingServiceImpl.saveSpecialCarUpdateToDB(newSpecificVehicleSearchParameter);
                 }
+            }
             } catch (NullPointerException e) {
                 System.out.println("No any cars of this type : " + element.toString());
             }
         }
     }
-
-
 }

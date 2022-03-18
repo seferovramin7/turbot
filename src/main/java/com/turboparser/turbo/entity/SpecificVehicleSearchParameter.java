@@ -25,12 +25,8 @@ public class SpecificVehicleSearchParameter {
 
     @Column(name = "GENERAL_INFO")
     private String generalInfo;
-    @Column(name = "OWNER_NAME")
-    private String ownerName;
-    @Column(name = "PHONE")
-    private String phone;
     @Column(name = "LOT_ID")
-    private String lotId;
+    private Long lotId;
     @Column(name = "PRICE")
     private String price;
     @ManyToOne
@@ -40,9 +36,7 @@ public class SpecificVehicleSearchParameter {
     public String toString() {
         return
                 generalInfo + '\n' +
-                        ownerName + '\n' +
-                        phone + '\n' +
-                        lotId +
+                        lotId + '\n' +
                         price;
     }
 }
