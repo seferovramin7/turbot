@@ -6,6 +6,7 @@ public enum ChatStage {
     LANGUAGE,
     SPECIFIC,
     DELETE,
+    DELETE_SPECIFIC,
     CAR_MAKE,
     CAR_MODEL,
     PRICE_MIN,

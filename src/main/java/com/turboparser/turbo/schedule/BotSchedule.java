@@ -75,7 +75,9 @@ public class BotSchedule {
                 telegramMessagingServiceImpl.sendMessage(
                         telegramMessagingServiceImpl.getNoAnyCarFoundMessage(element.getChat().getChatId(), element.getChat().getLanguage(), element.getGeneralInfo()));
             } else {
-                SpecificVehicleSearchParameter oldSpecificVehicleSearchParameter = specificVehicleRepository.findTopByLotId(element.getLotId());
+                List<SpecificVehicleSearchParameter> allByLotId = specificVehicleRepository.findAllByLotId(element.getLotId());
+                SpecificVehicleSearchParameter oldSpecificVehicleSearchParameter = allByLotId.get(allByLotId.size() - 1);
+                Long chatId = oldSpecificVehicleSearchParameter.getChat().getChatId();
                 if (!oldSpecificVehicleSearchParameter.getPrice().equals(newSpecificVehicleSearchParameter.getPrice())
                         ||
                         !oldSpecificVehicleSearchParameter.getGeneralInfo().equals(newSpecificVehicleSearchParameter.getGeneralInfo())
@@ -85,7 +87,7 @@ public class BotSchedule {
                                     newSpecificVehicleSearchParameter,
                                     oldSpecificVehicleSearchParameter,
                                     element.getChat().getLanguage()));
-                    telegramMessagingServiceImpl.saveSpecialCarUpdateToDB(newSpecificVehicleSearchParameter);
+                    telegramMessagingServiceImpl.saveSpecialCarUpdateToDB(newSpecificVehicleSearchParameter, chatId);
                 }
             }
             } catch (NullPointerException e) {

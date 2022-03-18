@@ -21,4 +21,7 @@ public interface SearchParameterService {
 
     void deleteAllByModel(String model);
 
+    void deleteSpecialSearchParameterByLotId(Long chatId, Long lotId);
+
+
 }

@@ -1,7 +1,9 @@
 package com.turboparser.turbo.service.impl;
 
 import com.turboparser.turbo.entity.SearchParameter;
+import com.turboparser.turbo.entity.SpecificVehicleSearchParameter;
 import com.turboparser.turbo.repository.SearchParameterRepository;
+import com.turboparser.turbo.repository.SpecificVehicleRepository;
 import com.turboparser.turbo.service.SearchParameterService;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +14,11 @@ import java.util.List;
 public class SearchParameterServiceImpl implements SearchParameterService {
 
     private final SearchParameterRepository searchParameterRepository;
+    private final SpecificVehicleRepository specificVehicleRepository;
 
-    public SearchParameterServiceImpl(SearchParameterRepository searchParameterRepository) {
+    public SearchParameterServiceImpl(SearchParameterRepository searchParameterRepository, SpecificVehicleRepository specificVehicleRepository) {
         this.searchParameterRepository = searchParameterRepository;
+        this.specificVehicleRepository = specificVehicleRepository;
     }
 
     @Override
@@ -56,6 +60,14 @@ public class SearchParameterServiceImpl implements SearchParameterService {
         System.out.println("searchParameter" + searchParameter);
         if (searchParameter != null)
             searchParameterRepository.delete(searchParameter);
+    }
+
+    @Override
+    public void deleteSpecialSearchParameterByLotId(Long chatId, Long lotId) {
+        SpecificVehicleSearchParameter byChat_chatIdAndLotId = specificVehicleRepository.findByChat_ChatIdAndLotId(chatId, lotId);
+        System.out.println("searchParameter" + byChat_chatIdAndLotId);
+        if (byChat_chatIdAndLotId != null)
+            specificVehicleRepository.delete(byChat_chatIdAndLotId);
     }
 
 }
