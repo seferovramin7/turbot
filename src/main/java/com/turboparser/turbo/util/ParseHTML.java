@@ -55,11 +55,8 @@ public class ParseHTML {
                     .generalInfo(carNameString)
                     .price(carPriceString)
                     .build();
-
-            System.out.println(specificVehicleSearchParameter.toString());
             return specificVehicleSearchParameter;
         } catch (NullPointerException e) {
-            System.out.println("Car couldn't found");
             return null;
         }
     }

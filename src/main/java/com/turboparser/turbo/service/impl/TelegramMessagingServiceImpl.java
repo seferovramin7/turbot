@@ -164,6 +164,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             chat = chatDataService.updateChat(chat);
         }
 
+
         if (text.equals("/newspecific")) {
             chat.setChatStage(ChatStage.SPECIFIC);
             chat = chatDataService.updateChat(chat);
@@ -184,17 +185,21 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             } else {
                 sendMessage(notFoundAnySpecialCar(chatId, chat.getLanguage()));
             }
+            chat.setChatStage(ChatStage.NONE);
+            chat = chatDataService.updateChat(chat);
         }
 
         if (text.equals("/deletespecific")) {
-            chat.setChatStage(ChatStage.DELETE_SPECIFIC);
+            chat.setChatStage(ChatStage.SPECIFIC_DELETE);
             chatDataService.updateChat(chat);
-            return sendMessage(getDeleteMessage(chatId, chat.getLanguage()));
-        } else if (chat.getChatStage() == (ChatStage.DELETE_SPECIFIC)) {
-
-            searchParameterService.deleteSpecialSearchParameterByLotId(chatId, lotId);
+            SendMessageResponseDTO sendMessageResponseDTO = sendMessage(getSpecificDeleteMessage(chatId, chat.getLanguage()));
+            return sendMessageResponseDTO;
+        } else if (chat.getChatStage() == (ChatStage.SPECIFIC_DELETE)) {
+            SpecificVehicleSearchParameter byChat_chatIdAndGeneralInfo = specificVehicleRepository.findByChat_ChatIdAndGeneralInfo(chatId, text);
+            specificVehicleRepository.delete(byChat_chatIdAndGeneralInfo);
+            chat.setChatStage(ChatStage.NONE);
+            chat = chatDataService.updateChat(chat);
         }
-
         if (text.equals("/delete")) {
             searchParameterService.deleteAllByModel(null);
             chat.setChatStage(ChatStage.DELETE);
@@ -205,6 +210,8 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             String make = parts[0];
             String model = parts[1];
             searchParameterService.deleteSearchParameterByMakeAndModel(chatId, make, model);
+            chat.setChatStage(ChatStage.NONE);
+            chat = chatDataService.updateChat(chat);
         }
 
         if (chat.getChatStage() == ChatStage.START) {
@@ -398,12 +405,12 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     }
 
     private SendMessageDTO getSpecificDeleteMessage(Long chatId, Language language) {
-        List<SearchParameter> searchParameterList = searchParameterService.getSearchParameter(chatId);
+        List<SpecificVehicleSearchParameter> searchParameterList = searchParameterService.getSpecificSearchParameter(chatId);
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[searchParameterList.size()][];
         for (int i = 0; i < searchParameterList.size(); i++) {
             buttons[i] = new KeyboardButtonDTO[1];
             for (int j = 0; j < 1; j++) {
-                buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake() + " " + searchParameterList.get(i + j).getModel());
+                buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getGeneralInfo());
             }
         }
         ReplyKeyboardMarkupDTO replyKeyboardMarkupDTO = new ReplyKeyboardMarkupDTO();
@@ -418,7 +425,8 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
 
     private SendMessageDTO getSpecificAddMessage(Long chatId, Language language, SpecificVehicleSearchParameter newSpecificVehicleSearchParameter) {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
-        sendMessageDTO.setText(messageProvider.getMessage("new_specific_info", language) + "\n" + newSpecificVehicleSearchParameter.getGeneralInfo().replaceAll(", ", "\n"));
+        sendMessageDTO.setText(messageProvider.getMessage("new_specific_info", language) + "\n" +
+                newSpecificVehicleSearchParameter.getGeneralInfo());
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;

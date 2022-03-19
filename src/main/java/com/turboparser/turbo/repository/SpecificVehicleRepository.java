@@ -11,6 +11,8 @@ import java.util.List;
 public interface SpecificVehicleRepository extends JpaRepository<SpecificVehicleSearchParameter, Long> {
     SpecificVehicleSearchParameter findByLotId(Long lotId);
     SpecificVehicleSearchParameter findByChat_ChatIdAndLotId(Long chatId ,Long lotId);
+    SpecificVehicleSearchParameter findByChat_ChatIdAndGeneralInfo(Long chatId ,String generalInfo);
+    List<SpecificVehicleSearchParameter> findAllByChat_ChatId(Long chatId);
 
     List<SpecificVehicleSearchParameter> findAllByLotId(Long lotId);
 }
