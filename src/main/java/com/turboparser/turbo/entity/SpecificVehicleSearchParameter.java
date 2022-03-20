@@ -13,7 +13,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "SpecificVehicleSearchParameter", schema = "TURBODB")
+@Table(name = "SpecificVehicleSearchParameter")
 public class SpecificVehicleSearchParameter {
 
     @javax.persistence.Id

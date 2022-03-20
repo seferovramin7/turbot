@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Entity
 @Data
-@Table(name = "MESSAGE", schema = "TURBODB")
+@Table(name = "MESSAGE")
 public class Message {
 
     @Id

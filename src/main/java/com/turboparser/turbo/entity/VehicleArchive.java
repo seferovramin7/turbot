@@ -15,11 +15,11 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name="VehicleArchive", schema = "TURBODB")
+@Table(name = "VehicleArchive")
 public class VehicleArchive {
 
     @javax.persistence.Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String lot;
