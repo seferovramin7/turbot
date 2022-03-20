@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name="VehicleArchive", schema = "TURBODB")
+@Table(name="VehicleArchive", schema = "public")
 public class VehicleArchive {
 
     @javax.persistence.Id

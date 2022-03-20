@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 @Entity
 @Data
-@Table(name="USER", schema = "TURBODB")
+@Table(name="USER", schema = "public")
 public class User {
 
     @Id
