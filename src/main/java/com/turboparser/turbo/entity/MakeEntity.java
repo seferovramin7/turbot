@@ -8,12 +8,14 @@ import lombok.NoArgsConstructor;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.Table;
 
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Table(name="MakeEntity", schema = "TURBODB")
 public class MakeEntity {
 
     @javax.persistence.Id

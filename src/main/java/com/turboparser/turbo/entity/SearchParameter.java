@@ -5,12 +5,13 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "SEARCH_PARAMETER")
 @Data
+@Table(name = "SEARCH_PARAMETER", schema = "TURBODB")
 public class SearchParameter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "ID")
     private Long id;
 
     @Column(name = "MESSAGE_ID")
@@ -35,6 +36,7 @@ public class SearchParameter {
     private Long maxYear;
 
     @ManyToOne
-    private com.turboparser.turbo.entity.Chat chat;
+    @JoinColumn(name = "CHAT_ID")
+    private Chat chat;
 
 }

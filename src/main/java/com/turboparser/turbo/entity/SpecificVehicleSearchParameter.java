@@ -13,7 +13,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "SpecificVehicleSearchParameter")
+@Table(name = "SpecificVehicleSearchParameter", schema = "TURBODB")
 public class SpecificVehicleSearchParameter {
 
     @javax.persistence.Id
@@ -29,8 +29,10 @@ public class SpecificVehicleSearchParameter {
     private Long lotId;
     @Column(name = "PRICE")
     private String price;
+
     @ManyToOne
-    private com.turboparser.turbo.entity.Chat chat;
+    @JoinColumn(name = "CHAT_ID")
+    private Chat chat;
 
     @Override
     public String toString() {

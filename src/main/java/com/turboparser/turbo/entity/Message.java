@@ -6,12 +6,12 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "MESSAGE")
 @Data
+@Table(name = "MESSAGE", schema = "TURBODB")
 public class Message {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "MESSAGE_ID")
@@ -28,5 +28,6 @@ public class Message {
     private User user;
 
     @ManyToOne
-    private com.turboparser.turbo.entity.Chat chat;
+    @JoinColumn(name = "CHAT_ID")
+    private Chat chat;
 }

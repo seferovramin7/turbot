@@ -2,17 +2,15 @@ package com.turboparser.turbo.entity;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
-@Table(name="USER")
 @Data
+@Table(name="USER", schema = "TURBODB")
 public class User {
 
     @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name = "USER_ID")
     private Long id;
 
