@@ -7,7 +7,7 @@ import com.turboparser.turbo.constant.Language;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "CHAT")
+@Table(name = "CHAT", schema = "TURBODB")
 @Data
 public class Chat {
 
