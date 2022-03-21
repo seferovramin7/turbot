@@ -71,7 +71,7 @@ public class ParseHTML {
             String numberofCars = amountHTML.first().html().split("\\s")[0];
 
 
-            numberofCars = (Integer.parseInt(numberofCars) > 10) ? "10" : numberofCars;
+            numberofCars = (Integer.parseInt(numberofCars) > 15) ? "15 " : numberofCars;
 
             List<NotificationDTO> notificationDTOList = new ArrayList<>();
             for (int i = 0; i < Integer.valueOf(numberofCars); i++) {
@@ -97,8 +97,7 @@ public class ParseHTML {
 
                 LocalDateTime now = LocalDateTime.now();
                 LocalTime publishTime = LocalTime.parse(carDateString.split(" ")[2]);
-                LocalTime publishDay = LocalTime.parse(carDateString.split(" ")[1]);
-
+                String publishDay = carDateString.split(" ")[1];
                 Duration duration = Duration.between(publishTime, now);
                 if (publishDay.equals("bugün") && duration.toMinutes() <= minutes && duration.toMinutes() > 0) {
                     notificationDTO = NotificationDTO.builder()

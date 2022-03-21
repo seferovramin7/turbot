@@ -140,32 +140,32 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             }
         }
 
-        if (text.equals("/all")) {
-            searchParameterService.deleteAllByModel(null);
-            List<SearchParameter> allByChatId = searchParameterRepository.getAllByChat_ChatId(chatId);
-            for (SearchParameter element : allByChatId) {
-                if (element.getModel() != null) {
-                    String allResult =
-                            element.getMake() + " " + element.getModel() + "\n"
-                                    + "Min : " + element.getMinPrice() + " AZN" + "\n"
-                                    + "Max : " + element.getMaxPrice() + " AZN" + "\n"
-                                    + "From : " + element.getMinYear() + "\n"
-                                    + "To : " + element.getMaxYear();
-                    sendMessage(getAllSearchMessage(chatId, allResult));
-                } else {
-                    searchParameterRepository.deleteById(element.getId());
-                }
-            }
-            return null;
-        }
+//        if (text.equals("/all")) {
+//            searchParameterService.deleteAllByModel(null);
+//            List<SearchParameter> allByChatId = searchParameterRepository.getAllByChat_ChatId(chatId);
+//            for (SearchParameter element : allByChatId) {
+//                if (element.getModel() != null) {
+//                    String allResult =
+//                            element.getMake() + " " + element.getModel() + "\n"
+//                                    + "Min : " + element.getMinPrice() + " AZN" + "\n"
+//                                    + "Max : " + element.getMaxPrice() + " AZN" + "\n"
+//                                    + "From : " + element.getMinYear() + "\n"
+//                                    + "To : " + element.getMaxYear();
+//                    sendMessage(getAllSearchMessage(chatId, allResult));
+//                } else {
+//                    searchParameterRepository.deleteById(element.getId());
+//                }
+//            }
+//            return null;
+//        }
 
-        if (text.equals("/new")) {
+        if (text.equals("/new_category")) {
             chat.setChatStage(ChatStage.START);
             chat = chatDataService.updateChat(chat);
         }
 
 
-        if (text.equals("/newspecific")) {
+        if (text.equals("/new_car")) {
             chat.setChatStage(ChatStage.SPECIFIC);
             chat = chatDataService.updateChat(chat);
             sendMessage(getSpecificInfoMessage(chatId, chat.getLanguage()));
@@ -189,7 +189,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             chat = chatDataService.updateChat(chat);
         }
 
-        if (text.equals("/deletespecific")) {
+        if (text.equals("/delete_car")) {
             chat.setChatStage(ChatStage.SPECIFIC_DELETE);
             chatDataService.updateChat(chat);
             SendMessageResponseDTO sendMessageResponseDTO = sendMessage(getSpecificDeleteMessage(chatId, chat.getLanguage()));
@@ -200,7 +200,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             chat.setChatStage(ChatStage.NONE);
             chat = chatDataService.updateChat(chat);
         }
-        if (text.equals("/delete")) {
+        if (text.equals("/delete_category")) {
             searchParameterService.deleteAllByModel(null);
             chat.setChatStage(ChatStage.DELETE);
             chatDataService.updateChat(chat);
