@@ -71,7 +71,7 @@ public class ParseHTML {
             String numberofCars = amountHTML.first().html().split("\\s")[0];
 
 
-            numberofCars = (Integer.parseInt(numberofCars) > 15) ? "15 " : numberofCars;
+            numberofCars = (Integer.parseInt(numberofCars) > 15) ? "15" : numberofCars;
 
             List<NotificationDTO> notificationDTOList = new ArrayList<>();
             for (int i = 0; i < Integer.valueOf(numberofCars); i++) {
