@@ -32,7 +32,7 @@ public class ParseHTML {
 
 
     public SpecificVehicleSearchParameter parseSpecificCarHTML(String rawHTML) throws ParseException {
-        try {
+//        try {
             String carNameString = "";
             Document doc = Jsoup.parse(rawHTML);
 
@@ -41,7 +41,7 @@ public class ParseHTML {
             carLotString = carLotString.split(":")[3].trim().replaceAll("</p>", "");
             long carLotLong = Long.parseLong(carLotString);
 
-            Elements carName = doc.getElementsByClass("product-name product-name-row");
+            Elements carName = doc.getElementsByClass("product-name");
             carNameString += carName.first().html();
             carNameString = carNameString.replaceAll("<span class=\"nobr\">", "").replaceAll("</span>", "");
 
@@ -56,9 +56,9 @@ public class ParseHTML {
                     .price(carPriceString)
                     .build();
             return specificVehicleSearchParameter;
-        } catch (NullPointerException e) {
-            return null;
-        }
+//        } catch (NullPointerException e) {
+//            return null;
+//        }
     }
 
 

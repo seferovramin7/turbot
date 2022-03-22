@@ -157,15 +157,21 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                 if (specificVehicleRepository.findByLotId(Long.parseLong(text)) == null) {
                     newSpecificVehicleSearchParameter.setChat(chat);
                     specificVehicleRepository.save(newSpecificVehicleSearchParameter);
+                    chat.setChatStage(ChatStage.NONE);
+                    chat = chatDataService.updateChat(chat);
                     sendMessage(getSpecificAddMessage(chatId, chat.getLanguage(), newSpecificVehicleSearchParameter));
                 } else {
                     if (newSpecificVehicleSearchParameter.getClass() == specificVehicleRepository.findByLotId(newSpecificVehicleSearchParameter.getLotId()).getClass()) {
                         sendMessage(getAlreadyExistisMessage(chatId, chat.getLanguage()));
+                        chat.setChatStage(ChatStage.NONE);
+                        chat = chatDataService.updateChat(chat);
                         return null;
                     }
                 }
             } else {
                 sendMessage(notFoundAnySpecialCar(chatId, chat.getLanguage()));
+                chat.setChatStage(ChatStage.NONE);
+                chat = chatDataService.updateChat(chat);
             }
             chat.setChatStage(ChatStage.NONE);
             chat = chatDataService.updateChat(chat);
