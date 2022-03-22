@@ -1,6 +1,5 @@
 package com.turboparser.turbo.service;
 
-import com.turboparser.turbo.entity.Chat;
 import com.turboparser.turbo.entity.SearchParameter;
 import com.turboparser.turbo.entity.SpecificVehicleSearchParameter;
 
@@ -19,8 +18,12 @@ public interface SearchParameterService {
 
     SearchParameter updateSearchParameter(SearchParameter searchParameter);
 
-    void deleteSearchParameterByMakeAndModel(Long chatId, String make,String model);
 
+    void deleteSearchParameterByMakeAndModelAndMinAndMaxPrice(Long chatId,
+                                                              String make,
+                                                              String model,
+                                                              Long minPrice,
+                                                              Long maxPrice);
     void deleteSearchParameter(Long chatId);
 
     void deleteAllByModel(String model);

@@ -55,13 +55,22 @@ public class SearchParameterServiceImpl implements SearchParameterService {
 
     @Override
     @Transactional
-    public void deleteAllByModel(String model){
+    public void deleteAllByModel(String model) {
         searchParameterRepository.deleteAllByModel(model);
     }
 
-    @Override
-    public void deleteSearchParameterByMakeAndModel(Long chatId, String make, String model) {
-        SearchParameter searchParameter = searchParameterRepository.findByMakeAndModelAndChat_ChatId( make, model, chatId);
+      @Override
+    public void deleteSearchParameterByMakeAndModelAndMinAndMaxPrice(Long chatId,
+                                                                     String make,
+                                                                     String model,
+                                                                     Long minPrice,
+                                                                     Long maxPrice) {
+        SearchParameter searchParameter = searchParameterRepository.findByMakeAndModelAndMinPriceAndMaxPriceAndChat_ChatId(
+                make,
+                model,
+                minPrice,
+                maxPrice,
+                chatId);
 
         if (searchParameter != null)
             searchParameterRepository.delete(searchParameter);
@@ -70,7 +79,7 @@ public class SearchParameterServiceImpl implements SearchParameterService {
     @Override
     public void deleteSpecialSearchParameterByLotId(Long chatId, Long lotId) {
         SpecificVehicleSearchParameter byChat_chatIdAndLotId = specificVehicleRepository.findByChat_ChatIdAndLotId(chatId, lotId);
-         if (byChat_chatIdAndLotId != null)
+        if (byChat_chatIdAndLotId != null)
             specificVehicleRepository.delete(byChat_chatIdAndLotId);
     }
 

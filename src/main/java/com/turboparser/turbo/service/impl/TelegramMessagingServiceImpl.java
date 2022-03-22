@@ -140,25 +140,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             }
         }
 
-//        if (text.equals("/all")) {
-//            searchParameterService.deleteAllByModel(null);
-//            List<SearchParameter> allByChatId = searchParameterRepository.getAllByChat_ChatId(chatId);
-//            for (SearchParameter element : allByChatId) {
-//                if (element.getModel() != null) {
-//                    String allResult =
-//                            element.getMake() + " " + element.getModel() + "\n"
-//                                    + "Min : " + element.getMinPrice() + " AZN" + "\n"
-//                                    + "Max : " + element.getMaxPrice() + " AZN" + "\n"
-//                                    + "From : " + element.getMinYear() + "\n"
-//                                    + "To : " + element.getMaxYear();
-//                    sendMessage(getAllSearchMessage(chatId, allResult));
-//                } else {
-//                    searchParameterRepository.deleteById(element.getId());
-//                }
-//            }
-//            return null;
-//        }
-
         if (text.equals("/new_category")) {
             chat.setChatStage(ChatStage.START);
             chat = chatDataService.updateChat(chat);
@@ -170,9 +151,10 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             chat = chatDataService.updateChat(chat);
             sendMessage(getSpecificInfoMessage(chatId, chat.getLanguage()));
         } else if (chat.getChatStage() == ChatStage.SPECIFIC) {
+            text = text.split("autos/")[1].split("-")[0];
             SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(text);
             if (newSpecificVehicleSearchParameter != null) {
-                if (specificVehicleRepository.findByLotId(Long.parseLong(text.split("autos/")[1].split("-")[0])) == null) {
+                if (specificVehicleRepository.findByLotId(Long.parseLong(text)) == null) {
                     newSpecificVehicleSearchParameter.setChat(chat);
                     specificVehicleRepository.save(newSpecificVehicleSearchParameter);
                     sendMessage(getSpecificAddMessage(chatId, chat.getLanguage(), newSpecificVehicleSearchParameter));
@@ -206,10 +188,13 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             chatDataService.updateChat(chat);
             return sendMessage(getDeleteMessage(chatId, chat.getLanguage()));
         } else if (chat.getChatStage() == (ChatStage.DELETE)) {
-            String[] parts = text.split("\\s", 2);
-            String make = parts[0];
-            String model = parts[1];
-            searchParameterService.deleteSearchParameterByMakeAndModel(chatId, make, model);
+            String[] parts = text.split(":", 6);
+            String make = parts[0].trim();
+            String model = parts[1].split("Min")[0].trim();
+            Long minPrice = Long.parseLong(parts[2].split("Max")[0].trim());
+            Long maxPrice = Long.parseLong(parts[3].trim());
+            System.out.println(make + " + " + model + " + " + minPrice + " + " + maxPrice);
+            searchParameterService.deleteSearchParameterByMakeAndModelAndMinAndMaxPrice(chatId, make, model, minPrice, maxPrice);
             chat.setChatStage(ChatStage.NONE);
             chat = chatDataService.updateChat(chat);
         }
@@ -391,7 +376,16 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         for (int i = 0; i < searchParameterList.size(); i++) {
             buttons[i] = new KeyboardButtonDTO[1];
             for (int j = 0; j < 1; j++) {
-                buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake() + " " + searchParameterList.get(i + j).getModel());
+                buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake()
+                        + " : " +
+                        searchParameterList.get(i + j).getModel()
+                        + "\n"
+                        + "Min : " +
+                        searchParameterList.get(i + j).getMinPrice()
+                        + "\n"
+                        + "Max : " +
+                        searchParameterList.get(i + j).getMaxPrice()
+                );
             }
         }
         ReplyKeyboardMarkupDTO replyKeyboardMarkupDTO = new ReplyKeyboardMarkupDTO();
