@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "usd_fx_rate",
+      "type": "java.lang.String",
+      "description": "Description for usd_fx_rate."
+  }
+] }

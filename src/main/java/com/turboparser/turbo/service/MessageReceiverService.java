@@ -7,7 +7,7 @@ import com.turboparser.turbo.dto.telegram.update.TelegramUpdateDTO;
 import java.io.IOException;
 import java.text.ParseException;
 
-public interface TelegramMessagingService {
+public interface MessageReceiverService {
 
     TelegramUpdateDTO getUpdates();
 

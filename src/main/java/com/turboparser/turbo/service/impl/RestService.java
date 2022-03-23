@@ -1,4 +1,4 @@
-package com.turboparser.turbo.service;
+package com.turboparser.turbo.service.impl;
 
 
 import com.turboparser.turbo.configuration.HttpClientConfig;

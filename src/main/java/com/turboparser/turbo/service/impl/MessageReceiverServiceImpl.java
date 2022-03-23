@@ -25,7 +25,7 @@ import static com.turboparser.turbo.constant.Currency.*;
 
 @Slf4j
 @Service
-public class TelegramMessagingServiceImpl implements TelegramMessagingService {
+public class MessageReceiverServiceImpl implements MessageReceiverService {
 
     private final HttpRequestService httpRequestService;
     private final ChatDataService chatDataService;
@@ -54,14 +54,14 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
 
     private Long offset = null;
 
-    public TelegramMessagingServiceImpl(HttpRequestService httpRequestService,
-                                        ChatDataService chatDataService,
-                                        MessageProvider messageProvider,
-                                        MakeService makeService,
-                                        ModelService modelService,
-                                        SearchParameterService searchParameterService,
-                                        RequestCreationService requestCreationService,
-                                        SpecificVehicleRepository specificVehicleRepository) {
+    public MessageReceiverServiceImpl(HttpRequestService httpRequestService,
+                                      ChatDataService chatDataService,
+                                      MessageProvider messageProvider,
+                                      MakeService makeService,
+                                      ModelService modelService,
+                                      SearchParameterService searchParameterService,
+                                      RequestCreationService requestCreationService,
+                                      SpecificVehicleRepository specificVehicleRepository) {
         this.httpRequestService = httpRequestService;
         this.chatDataService = chatDataService;
         this.messageProvider = messageProvider;
@@ -352,12 +352,10 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         ReplyKeyboardMarkupDTO replyKeyboardMarkupDTO = new ReplyKeyboardMarkupDTO();
         replyKeyboardMarkupDTO.setKeyboardButtonArray(buttons);
         replyKeyboardMarkupDTO.setOneTimeKeyboard(true);
-
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(messageProvider.getMessage("start_message", null));
         sendMessageDTO.setReplyKeyboard(replyKeyboardMarkupDTO);
-
         return sendMessageDTO;
     }
 
@@ -373,12 +371,10 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         ReplyKeyboardMarkupDTO replyKeyboardMarkupDTO = new ReplyKeyboardMarkupDTO();
         replyKeyboardMarkupDTO.setKeyboardButtonArray(buttons);
         replyKeyboardMarkupDTO.setOneTimeKeyboard(true);
-
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(messageProvider.getMessage("question_currency_choice", language));
         sendMessageDTO.setReplyKeyboard(replyKeyboardMarkupDTO);
-
         return sendMessageDTO;
     }
 
