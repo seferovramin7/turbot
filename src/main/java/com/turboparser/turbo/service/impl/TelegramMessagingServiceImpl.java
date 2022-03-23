@@ -11,10 +11,8 @@ import com.turboparser.turbo.dto.telegram.send.text.SendMessageDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramResponseDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramUpdateDTO;
 import com.turboparser.turbo.entity.*;
-import com.turboparser.turbo.repository.SearchParameterRepository;
 import com.turboparser.turbo.repository.SpecificVehicleRepository;
 import com.turboparser.turbo.service.*;
-import com.turboparser.turbo.util.CarTypeMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,8 +34,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     private final ModelService modelService;
     private final SearchParameterService searchParameterService;
     private final RequestCreationService requestCreationService;
-    private final CarTypeMapper carTypeMapper;
-    private final SearchParameterRepository searchParameterRepository;
     private final SpecificVehicleRepository specificVehicleRepository;
 
     @Value("${telegram.api.base-url}")
@@ -65,8 +61,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                                         ModelService modelService,
                                         SearchParameterService searchParameterService,
                                         RequestCreationService requestCreationService,
-                                        CarTypeMapper carTypeMapper,
-                                        SearchParameterRepository searchParameterRepository, SpecificVehicleRepository specificVehicleRepository) {
+                                        SpecificVehicleRepository specificVehicleRepository) {
         this.httpRequestService = httpRequestService;
         this.chatDataService = chatDataService;
         this.messageProvider = messageProvider;
@@ -74,8 +69,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         this.modelService = modelService;
         this.searchParameterService = searchParameterService;
         this.requestCreationService = requestCreationService;
-        this.carTypeMapper = carTypeMapper;
-        this.searchParameterRepository = searchParameterRepository;
         this.specificVehicleRepository = specificVehicleRepository;
     }
 
@@ -104,8 +97,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     @Override
     public SendMessageResponseDTO sendMessage(SendMessageDTO sendMessageDTO) {
         String url = telegramApiBaseUrl + "/bot" + botToken + "/sendMessage";
-        SendMessageResponseDTO responseDTO = httpRequestService.sendPostRequest(url, sendMessageDTO, SendMessageResponseDTO.class);
-        return responseDTO;
+        return httpRequestService.sendPostRequest(url, sendMessageDTO, SendMessageResponseDTO.class);
     }
 
     @Override
@@ -200,7 +192,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                     if (newSpecificVehicleSearchParameter.getClass() == specificVehicleRepository.findByLotId(newSpecificVehicleSearchParameter.getLotId()).getClass()) {
                         sendMessage(getAlreadyExistisMessage(chatId, chat.getLanguage()));
                         chat.setChatStage(ChatStage.NONE);
-                        chat = chatDataService.updateChat(chat);
+                        chatDataService.updateChat(chat);
                         return null;
                     }
                 }
@@ -216,8 +208,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         if (text.equals("/delete_car")) {
             chat.setChatStage(ChatStage.SPECIFIC_DELETE);
             chatDataService.updateChat(chat);
-            SendMessageResponseDTO sendMessageResponseDTO = sendMessage(getSpecificDeleteMessage(chatId, chat.getLanguage()));
-            return sendMessageResponseDTO;
+            return sendMessage(getSpecificDeleteMessage(chatId, chat.getLanguage()));
         } else if (chat.getChatStage() == (ChatStage.SPECIFIC_DELETE)) {
             SpecificVehicleSearchParameter byChat_chatIdAndGeneralInfo = specificVehicleRepository.findByChat_ChatIdAndGeneralInfo(chatId, text);
             specificVehicleRepository.delete(byChat_chatIdAndGeneralInfo);
@@ -249,33 +240,26 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         else if (chat.getChatStage() == ChatStage.CAR_MAKE) {
             MakeEntity make = makeService.getMakeByMakeName(text);
             int makeId = make.getMakeId();
-            if (make != null) {
-                SearchParameter searchParameter = new SearchParameter();
-                searchParameter.setChat(chat);
-                searchParameter.setMessageId(messageId);
-                searchParameter.setMake(make.getMake());
-                searchParameterService.saveSearchParameter(searchParameter);
-                chat.setChatStage(ChatStage.CAR_MODEL);
-                chatDataService.updateChat(chat);
-                return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
-            } else {
-                return sendMessage(getMakeChoiceMessage(chatId, chat.getLanguage()));
-            }
+            SearchParameter searchParameter = new SearchParameter();
+            searchParameter.setChat(chat);
+            searchParameter.setMessageId(messageId);
+            searchParameter.setMake(make.getMake());
+            searchParameterService.saveSearchParameter(searchParameter);
+            chat.setChatStage(ChatStage.CAR_MODEL);
+            chatDataService.updateChat(chat);
+            return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
         }
         // Car Model
         else if (chat.getChatStage() == ChatStage.CAR_MODEL) {
-            String model = "";
-            model = text;
             SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
-            searchParameter.setModel(model);
+            searchParameter.setModel(text);
             searchParameterService.updateSearchParameter(searchParameter);
             chat.setChatStage(ChatStage.PRICE_MIN);
             chatDataService.updateChat(chat);
             return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
         } else if (chat.getChatStage() == ChatStage.PRICE_MIN || chat.getChatStage() == ChatStage.PRICE_MAX) {
             // check if this parameter was skipped
-            if (text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
-            } else {
+            if (!text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
                 Long enteredPrice = null;
                 try {
                     enteredPrice = Long.parseLong(text);
@@ -321,9 +305,8 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                 return sendMessage(getYearQuestionMessage(chatId, chat.getLanguage(), true));
             }
         } else if (chat.getChatStage() == ChatStage.YEAR_MIN || chat.getChatStage() == ChatStage.YEAR_MAX) {
-            if (text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
-            } else {
-                Long enteredNumber = null;
+            if (!text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
+                long enteredNumber;
                 try {
                     SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
                     if (chat.getChatStage() == ChatStage.YEAR_MIN) {
@@ -347,8 +330,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                     if (searchParameter == null)
                         searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
                     sendMessage(getSearchParametersFinishMessage(chatId, chat.getLanguage(), chat.getCurrency(), searchParameter));
-                }
-                catch (NumberFormatException ex) {
+                } catch (NumberFormatException ex) {
                     log.error("Incorrect price. Entered value: " + text);
                     sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
                     chat.setChatStage(ChatStage.YEAR_MAX);
@@ -406,9 +388,8 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         int rowCount = makeList.size() / columnSize;
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[rowCount][];
         for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-            int columnCount = columnSize;
-            buttons[rowIndex] = new KeyboardButtonDTO[columnCount];
-            for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+            buttons[rowIndex] = new KeyboardButtonDTO[columnSize];
+            for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
                 buttons[rowIndex][columnIndex] = new KeyboardButtonDTO(makeList.get(rowIndex * columnSize + columnIndex).getMake());
             }
         }
@@ -429,9 +410,8 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         int rowCount = modelList.size() / columnSize;
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[rowCount][];
         for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-            int columnCount = columnSize;
-            buttons[rowIndex] = new KeyboardButtonDTO[columnCount];
-            for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+            buttons[rowIndex] = new KeyboardButtonDTO[columnSize];
+            for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
                 buttons[rowIndex][columnIndex] = new KeyboardButtonDTO(modelList.get(rowIndex * columnSize + columnIndex).getModel());
             }
         }
@@ -457,12 +437,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[searchParameterList.size()][];
         for (int i = 0; i < searchParameterList.size(); i++) {
             buttons[i] = new KeyboardButtonDTO[1];
-
-            Float multiplication = 1.0F;
-
-
-
-
+            float multiplication = 1.0F;
             for (int j = 0; j < 1; j++) {
                 switch (searchParameterList.get(i + j).getCurrency()) {
                     case AZN:
@@ -476,19 +451,22 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                         break;
                 }
 
-
                 buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake()
                         + " : " +
                         searchParameterList.get(i + j).getModel()
                         + "\n"
                         + "Min : " +
-                        Float.parseFloat(searchParameterList.get(i + j).getMinPrice())/multiplication + " " + searchParameterList.get(i + j).getCurrency()
+                        Float.parseFloat(searchParameterList.get(i + j).getMinPrice()) / multiplication + " " + searchParameterList.get(i + j).getCurrency()
                         + "\n"
                         + "Max : " +
-                        Float.parseFloat(searchParameterList.get(i + j).getMaxPrice())/multiplication + " " + searchParameterList.get(i + j).getCurrency()
+                        Float.parseFloat(searchParameterList.get(i + j).getMaxPrice()) / multiplication + " " + searchParameterList.get(i + j).getCurrency()
                 );
             }
         }
+        return getSendMessageDTO(chatId, language, buttons);
+    }
+
+    private SendMessageDTO getSendMessageDTO(Long chatId, Language language, KeyboardButtonDTO[][] buttons) {
         ReplyKeyboardMarkupDTO replyKeyboardMarkupDTO = new ReplyKeyboardMarkupDTO();
         replyKeyboardMarkupDTO.setKeyboardButtonArray(buttons);
         replyKeyboardMarkupDTO.setOneTimeKeyboard(true);
@@ -508,14 +486,7 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                 buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getGeneralInfo());
             }
         }
-        ReplyKeyboardMarkupDTO replyKeyboardMarkupDTO = new ReplyKeyboardMarkupDTO();
-        replyKeyboardMarkupDTO.setKeyboardButtonArray(buttons);
-        replyKeyboardMarkupDTO.setOneTimeKeyboard(true);
-        SendMessageDTO sendMessageDTO = new SendMessageDTO();
-        sendMessageDTO.setChatId(chatId);
-        sendMessageDTO.setText(messageProvider.getMessage("question_delete_search", language));
-        sendMessageDTO.setReplyKeyboard(replyKeyboardMarkupDTO);
-        return sendMessageDTO;
+        return getSendMessageDTO(chatId, language, buttons);
     }
 
     private SendMessageDTO getSpecificAddMessage(Long chatId, Language language, SpecificVehicleSearchParameter newSpecificVehicleSearchParameter) {
@@ -552,34 +523,26 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     }
 
     private SendMessageDTO getPriceQuestionMessage(Long chatId, Language language, boolean isLowPriceQuestion) {
-        SendMessageDTO sendMessageDTO = getSkipableQuestion(language);
+        SendMessageDTO sendMessageDTO = getSkippableQuestion(language);
         sendMessageDTO.setChatId(chatId);
-        if (isLowPriceQuestion == true)
+        if (isLowPriceQuestion)
             sendMessageDTO.setText(messageProvider.getMessage("question_min_price", language));
         else
             sendMessageDTO.setText(messageProvider.getMessage("question_max_price", language));
         return sendMessageDTO;
     }
 
-    private SendMessageDTO getAllSearchMessage(Long chatId, String text) {
-        SendMessageDTO sendMessageDTO = new SendMessageDTO();
-        sendMessageDTO.setChatId(chatId);
-        sendMessageDTO.setText(text);
-        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
-        return sendMessageDTO;
-    }
-
     private SendMessageDTO getYearQuestionMessage(Long chatId, Language language, boolean isLowYearQuestion) {
-        SendMessageDTO sendMessageDTO = getSkipableQuestion(language);
+        SendMessageDTO sendMessageDTO = getSkippableQuestion(language);
         sendMessageDTO.setChatId(chatId);
-        if (isLowYearQuestion == true)
+        if (isLowYearQuestion)
             sendMessageDTO.setText(messageProvider.getMessage("question_min_year", language));
         else
             sendMessageDTO.setText(messageProvider.getMessage("question_max_year", language));
         return sendMessageDTO;
     }
 
-    private SendMessageDTO getSkipableQuestion(Language language) {
+    private SendMessageDTO getSkippableQuestion(Language language) {
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[1][1];
         buttons[0][0] = new KeyboardButtonDTO(messageProvider.getMessage("skip_button", language));
         ReplyKeyboardMarkupDTO replyKeyboard = new ReplyKeyboardMarkupDTO();
@@ -674,8 +637,8 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         String text = messageProvider.getMessage("entered_search_params", language) + ": \n" +
                 "- " + messageProvider.getMessage("notification.make", language) + ": " + make + "\n" +
                 "- " + messageProvider.getMessage("notification.model", language) + ": " + model + "\n" +
-                "- " + messageProvider.getMessage("notification.min_price", language) + ": " +  minPrice + " " + currency + "\n" +
-                "- " + messageProvider.getMessage("notification.max_price", language) + ": " +  maxPrice + " " + currency + "\n" +
+                "- " + messageProvider.getMessage("notification.min_price", language) + ": " + minPrice + " " + currency + "\n" +
+                "- " + messageProvider.getMessage("notification.max_price", language) + ": " + maxPrice + " " + currency + "\n" +
                 "- " + messageProvider.getMessage("notification.max_year", language) + ": " + maxYear + "\n" +
                 "- " + messageProvider.getMessage("notification.min_year", language) + ": " + minYear + "\n";
 
