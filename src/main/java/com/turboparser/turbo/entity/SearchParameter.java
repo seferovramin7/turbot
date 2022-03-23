@@ -1,5 +1,6 @@
 package com.turboparser.turbo.entity;
 
+import com.turboparser.turbo.constant.Currency;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -23,11 +24,15 @@ public class SearchParameter {
     @Column(name = "MODEL")
     private String model;
 
+    @Column(name = "CURRENCY", length = 3)
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
+
     @Column(name = "PRICE_MIN")
-    private Long minPrice;
+    private String minPrice;
 
     @Column(name = "PRICE_MAX")
-    private Long maxPrice;
+    private String maxPrice;
 
     @Column(name = "YEAR_MIN")
     private Long minYear;

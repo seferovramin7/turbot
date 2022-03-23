@@ -12,4 +12,8 @@ public class TurboApplication {
         SpringApplication.run(TurboApplication.class, args);
     }
 
+//    public static void main(String[] args) {
+//        System.out.println(Float.parseFloat("1700000"));
+//    }
+
 }

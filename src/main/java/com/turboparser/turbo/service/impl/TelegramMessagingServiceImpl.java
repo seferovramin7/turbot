@@ -1,6 +1,7 @@
 package com.turboparser.turbo.service.impl;
 
 import com.turboparser.turbo.constant.ChatStage;
+import com.turboparser.turbo.constant.Currency;
 import com.turboparser.turbo.constant.Language;
 import com.turboparser.turbo.dto.telegram.send.KeyboardButtonDTO;
 import com.turboparser.turbo.dto.telegram.send.ReplyKeyboardMarkupDTO;
@@ -21,6 +22,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+
+import static com.turboparser.turbo.constant.Currency.*;
 
 @Slf4j
 @Service
@@ -43,8 +46,17 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     private String botToken;
     @Value("${telegram.bot.name}")
     private String botName;
-    private Long offset = null;
 
+    @Value("${azn_fx_rate}")
+    private String azn;
+
+    @Value("${usd_fx_rate}")
+    private String usd;
+
+    @Value("${euro_fx_rate}")
+    private String euro;
+
+    private Long offset = null;
 
     public TelegramMessagingServiceImpl(HttpRequestService httpRequestService,
                                         ChatDataService chatDataService,
@@ -140,6 +152,30 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             }
         }
 
+
+        if (text.equals("/currency")) {
+            sendMessage(getCurrencyChoiceMessage(chatId, chat.getLanguage()));
+            chat.setChatStage(ChatStage.LANGUAGE);
+            chat = chatDataService.updateChat(chat);
+        } else if (chat.getChatStage() == ChatStage.LANGUAGE) {
+            if (text.equals("₼ - Azn") || text.equals("$ - Dollar") || text.equals("€ - Euro")) {
+                switch (text) {
+                    case "₼ - Azn":
+                        chat.setCurrency(AZN);
+                        chat = chatDataService.updateChat(chat);
+                        break;
+                    case "$ - Dollar":
+                        chat.setCurrency(USD);
+                        chat = chatDataService.updateChat(chat);
+                        break;
+                    case "€ - Euro":
+                        chat.setCurrency(EUR);
+                        chat = chatDataService.updateChat(chat);
+                        break;
+                }
+                return sendMessage(getCurrencyMessage(chatId, chat.getLanguage(), chat.getCurrency()));
+            }
+        }
         if (text.equals("/new_category")) {
             chat.setChatStage(ChatStage.START);
             chat = chatDataService.updateChat(chat);
@@ -199,7 +235,6 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
             String model = parts[1].split("Min")[0].trim();
             Long minPrice = Long.parseLong(parts[2].split("Max")[0].trim());
             Long maxPrice = Long.parseLong(parts[3].trim());
-            System.out.println(make + " + " + model + " + " + minPrice + " + " + maxPrice);
             searchParameterService.deleteSearchParameterByMakeAndModelAndMinAndMaxPrice(chatId, make, model, minPrice, maxPrice);
             chat.setChatStage(ChatStage.NONE);
             chat = chatDataService.updateChat(chat);
@@ -250,10 +285,29 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                     return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
                 }
                 SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
+
+
+                Float multiplication = 1.0F;
+                if (chat.getCurrency() == null) {
+                    chat.setCurrency(AZN);
+                    chatDataService.updateChat(chat);
+                }
+                switch (chat.getCurrency()) {
+                    case AZN:
+                        multiplication *= Float.parseFloat(azn);
+                        break;
+                    case EUR:
+                        multiplication *= Float.parseFloat(euro);
+                        break;
+                    case USD:
+                        multiplication *= Float.parseFloat(usd);
+                        break;
+                }
                 if (chat.getChatStage() == ChatStage.PRICE_MIN) {
-                    searchParameter.setMinPrice(enteredPrice);
+                    searchParameter.setCurrency(chat.getCurrency());
+                    searchParameter.setMinPrice(String.valueOf(enteredPrice * multiplication));
                 } else {
-                    searchParameter.setMaxPrice(enteredPrice);
+                    searchParameter.setMaxPrice(String.valueOf(enteredPrice * multiplication));
                 }
                 searchParameterService.updateSearchParameter(searchParameter);
             }
@@ -292,8 +346,9 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
                     chat = chatDataService.updateChat(chat);
                     if (searchParameter == null)
                         searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
-                    sendMessage(getSearchParametersFinishMessage(chatId, chat.getLanguage(), searchParameter));
-                } catch (NumberFormatException ex) {
+                    sendMessage(getSearchParametersFinishMessage(chatId, chat.getLanguage(), chat.getCurrency(), searchParameter));
+                }
+                catch (NumberFormatException ex) {
                     log.error("Incorrect price. Entered value: " + text);
                     sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
                     chat.setChatStage(ChatStage.YEAR_MAX);
@@ -319,6 +374,27 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(messageProvider.getMessage("start_message", null));
+        sendMessageDTO.setReplyKeyboard(replyKeyboardMarkupDTO);
+
+        return sendMessageDTO;
+    }
+
+
+    private SendMessageDTO getCurrencyChoiceMessage(Long chatId, Language language) {
+        // prepare keyboard
+        KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[2][];
+        buttons[0] = new KeyboardButtonDTO[1];
+        buttons[1] = new KeyboardButtonDTO[2];
+        buttons[0][0] = new KeyboardButtonDTO(messageProvider.getMessage("currency_azn", null));
+        buttons[1][0] = new KeyboardButtonDTO(messageProvider.getMessage("currency_dollar", null));
+        buttons[1][1] = new KeyboardButtonDTO(messageProvider.getMessage("currency_euro", null));
+        ReplyKeyboardMarkupDTO replyKeyboardMarkupDTO = new ReplyKeyboardMarkupDTO();
+        replyKeyboardMarkupDTO.setKeyboardButtonArray(buttons);
+        replyKeyboardMarkupDTO.setOneTimeKeyboard(true);
+
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setText(messageProvider.getMessage("question_currency_choice", language));
         sendMessageDTO.setReplyKeyboard(replyKeyboardMarkupDTO);
 
         return sendMessageDTO;
@@ -381,16 +457,35 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[searchParameterList.size()][];
         for (int i = 0; i < searchParameterList.size(); i++) {
             buttons[i] = new KeyboardButtonDTO[1];
+
+            Float multiplication = 1.0F;
+
+
+
+
             for (int j = 0; j < 1; j++) {
+                switch (searchParameterList.get(i + j).getCurrency()) {
+                    case AZN:
+                        multiplication *= Float.parseFloat(azn);
+                        break;
+                    case EUR:
+                        multiplication *= Float.parseFloat(euro);
+                        break;
+                    case USD:
+                        multiplication *= Float.parseFloat(usd);
+                        break;
+                }
+
+
                 buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake()
                         + " : " +
                         searchParameterList.get(i + j).getModel()
                         + "\n"
                         + "Min : " +
-                        searchParameterList.get(i + j).getMinPrice()
+                        Float.parseFloat(searchParameterList.get(i + j).getMinPrice())/multiplication + " " + searchParameterList.get(i + j).getCurrency()
                         + "\n"
                         + "Max : " +
-                        searchParameterList.get(i + j).getMaxPrice()
+                        Float.parseFloat(searchParameterList.get(i + j).getMaxPrice())/multiplication + " " + searchParameterList.get(i + j).getCurrency()
                 );
             }
         }
@@ -435,6 +530,14 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
     private SendMessageDTO getLanguageMessage(Long chatId, Language language) {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setText(messageProvider.getMessage("language_choice", language));
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    private SendMessageDTO getCurrencyMessage(Long chatId, Language language, Currency currency) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setText(messageProvider.getMessage("currency_choice", language) + " : " + currency);
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
@@ -545,19 +648,34 @@ public class TelegramMessagingServiceImpl implements TelegramMessagingService {
         return sendMessageDTO;
     }
 
-    private SendMessageDTO getSearchParametersFinishMessage(Long chatId, Language language, SearchParameter searchParameter) {
+    private SendMessageDTO getSearchParametersFinishMessage(Long chatId, Language language, Currency currency, SearchParameter searchParameter) {
+        Currency currency1 = searchParameter.getCurrency();
+        float multiplication = 1.0F;
+        switch (currency1) {
+            case AZN:
+                multiplication *= Float.parseFloat(azn);
+                break;
+            case EUR:
+                multiplication *= Float.parseFloat(euro);
+                break;
+            case USD:
+                multiplication *= Float.parseFloat(usd);
+                break;
+        }
+
         String make = searchParameter.getMake();
         String model = searchParameter.getModel();
-        String minPrice = (searchParameter.getMinPrice() != null) ? searchParameter.getMinPrice().toString() : messageProvider.getMessage("notification.no_entered", language);
-        String maxPrice = (searchParameter.getMaxPrice() != null) ? searchParameter.getMaxPrice().toString() : messageProvider.getMessage("notification.no_entered", language);
+        String minPrice = (searchParameter.getMinPrice() != null) ? String.valueOf(Float.parseFloat(searchParameter.getMinPrice()) / multiplication) : messageProvider.getMessage("notification.no_entered", language);
+        String maxPrice = (searchParameter.getMaxPrice() != null) ? String.valueOf(Float.parseFloat(searchParameter.getMaxPrice()) / multiplication) : messageProvider.getMessage("notification.no_entered", language);
         String minYear = (searchParameter.getMinYear() != null) ? searchParameter.getMinYear().toString() : messageProvider.getMessage("notification.no_entered", language);
         String maxYear = (searchParameter.getMaxYear() != null) ? searchParameter.getMaxYear().toString() : messageProvider.getMessage("notification.no_entered", language);
+
 
         String text = messageProvider.getMessage("entered_search_params", language) + ": \n" +
                 "- " + messageProvider.getMessage("notification.make", language) + ": " + make + "\n" +
                 "- " + messageProvider.getMessage("notification.model", language) + ": " + model + "\n" +
-                "- " + messageProvider.getMessage("notification.min_price", language) + ": " + minPrice + "\n" +
-                "- " + messageProvider.getMessage("notification.max_price", language) + ": " + maxPrice + "\n" +
+                "- " + messageProvider.getMessage("notification.min_price", language) + ": " +  minPrice + " " + currency + "\n" +
+                "- " + messageProvider.getMessage("notification.max_price", language) + ": " +  maxPrice + " " + currency + "\n" +
                 "- " + messageProvider.getMessage("notification.max_year", language) + ": " + maxYear + "\n" +
                 "- " + messageProvider.getMessage("notification.min_year", language) + ": " + minYear + "\n";
 

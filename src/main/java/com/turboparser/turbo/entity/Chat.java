@@ -1,5 +1,6 @@
 package com.turboparser.turbo.entity;
 
+import com.turboparser.turbo.constant.Currency;
 import lombok.Data;
 import com.turboparser.turbo.constant.ChatStage;
 import com.turboparser.turbo.constant.Language;
@@ -43,5 +44,9 @@ public class Chat {
     @Column(name = "LANGUAGE", length = 3)
     @Enumerated(EnumType.STRING)
     private Language language;
+
+    @Column(name = "CURRENCY", length = 3)
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
 
 }

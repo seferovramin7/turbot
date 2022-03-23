@@ -70,7 +70,7 @@ public class BotSchedule {
         List<SpecificVehicleSearchParameter> archivedCars = specificVehicleRepository.findAll();
         for (SpecificVehicleSearchParameter element : archivedCars) {
             try {
-            SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(turboLink + element.getLotId());
+            SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(element.getLotId().toString());
             if (newSpecificVehicleSearchParameter == null) {
                 telegramMessagingServiceImpl.sendMessage(
                         telegramMessagingServiceImpl.getNoAnyCarFoundMessage(element.getChat().getChatId(), element.getChat().getLanguage(), element.getGeneralInfo()));
