@@ -29,10 +29,10 @@ public class SearchParameter {
     private Currency currency;
 
     @Column(name = "PRICE_MIN")
-    private String minPrice;
+    private Long minPrice;
 
     @Column(name = "PRICE_MAX")
-    private String maxPrice;
+    private Long maxPrice;
 
     @Column(name = "YEAR_MIN")
     private Long minYear;

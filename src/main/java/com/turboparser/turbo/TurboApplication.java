@@ -13,7 +13,6 @@ public class TurboApplication {
     }
 
 //    public static void main(String[] args) {
-//        System.out.println(Float.parseFloat("1700000"));
+//        System.out.println( "20 000 $".replaceAll("[ AZN$€]", ""));
 //    }
-
 }

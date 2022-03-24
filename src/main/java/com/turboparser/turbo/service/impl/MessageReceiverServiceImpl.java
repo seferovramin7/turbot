@@ -18,8 +18,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Locale;
 
 import static com.turboparser.turbo.constant.Currency.*;
 
@@ -221,11 +223,22 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
             chatDataService.updateChat(chat);
             return sendMessage(getDeleteMessage(chatId, chat.getLanguage()));
         } else if (chat.getChatStage() == (ChatStage.DELETE)) {
+
             String[] parts = text.split(":", 6);
             String make = parts[0].trim();
             String model = parts[1].split("Min")[0].trim();
-            Long minPrice = Long.parseLong(parts[2].split("Max")[0].trim());
-            Long maxPrice = Long.parseLong(parts[3].trim());
+            Long minPrice = Long.parseLong(((parts[2].split("Max")[0])
+                    .replaceAll("\\.00", "")
+                    .replaceAll(",","")
+                    .replaceAll("[ €$AZN]", "").trim()));
+            Long maxPrice = Long.parseLong(parts[3]
+                    .replaceAll("\\.00", "")
+                    .replaceAll(",","")
+                    .replaceAll("[ €$AZN]", "").trim());
+            System.out.println("minPrice :" + minPrice);
+            System.out.println("maxPrice :" + maxPrice);
+            System.out.println(chatId + " : " +  make + " : " +  model
+                    + " : " +  minPrice + " : " +  maxPrice);
             searchParameterService.deleteSearchParameterByMakeAndModelAndMinAndMaxPrice(chatId, make, model, minPrice, maxPrice);
             chat.setChatStage(ChatStage.NONE);
             chat = chatDataService.updateChat(chat);
@@ -260,7 +273,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         } else if (chat.getChatStage() == ChatStage.PRICE_MIN || chat.getChatStage() == ChatStage.PRICE_MAX) {
             // check if this parameter was skipped
             if (!text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
-                Long enteredPrice = null;
+                Long enteredPrice = 0L;
                 try {
                     enteredPrice = Long.parseLong(text);
                 } catch (NumberFormatException ex) {
@@ -269,9 +282,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                     return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
                 }
                 SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
-
-
-                Float multiplication = 1.0F;
+                int multiplication = 1;
                 if (chat.getCurrency() == null) {
                     chat.setCurrency(AZN);
                     chatDataService.updateChat(chat);
@@ -289,9 +300,9 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                 }
                 if (chat.getChatStage() == ChatStage.PRICE_MIN) {
                     searchParameter.setCurrency(chat.getCurrency());
-                    searchParameter.setMinPrice(String.valueOf(enteredPrice * multiplication));
+                    searchParameter.setMinPrice(enteredPrice * multiplication);
                 } else {
-                    searchParameter.setMaxPrice(String.valueOf(enteredPrice * multiplication));
+                    searchParameter.setMaxPrice(enteredPrice * multiplication);
                 }
                 searchParameterService.updateSearchParameter(searchParameter);
             }
@@ -427,6 +438,54 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         specificVehicleRepository.save(newSpecificVehicleSearchParameter);
     }
 
+    private SendMessageDTO getSearchParametersFinishMessage(Long chatId, Language language, Currency currency, SearchParameter searchParameter) {
+        Currency currency1 = searchParameter.getCurrency();
+        Locale loc;
+        switch (currency1) {
+            case AZN:
+                loc = new Locale("az", "AZ");
+                break;
+            case EUR:
+                loc = new Locale("fr", "FR");
+                break;
+            case USD:
+                loc = new Locale("en", "US");
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + currency1);
+        }
+        java.util.Currency javaCurrency = java.util.Currency.getInstance(loc);
+        NumberFormat currencyInstance = NumberFormat.getCurrencyInstance(loc);
+
+        String make = searchParameter.getMake();
+        String model = searchParameter.getModel();
+        String minPrice = (searchParameter.getMinPrice() != 0) ? currencyInstance.format((searchParameter.getMinPrice()))
+                .replaceAll("\\.00", "")
+                .replaceAll(",00 €", "€")
+                .replaceAll("[AZN$]]", "")
+                : messageProvider.getMessage("notification.no_entered", language);
+        String maxPrice = (searchParameter.getMaxPrice() != 0) ? currencyInstance.format((searchParameter.getMaxPrice()))
+                .replaceAll("\\.00", "")
+                .replaceAll(",00 €", "€") : messageProvider.getMessage("notification.no_entered", language);
+        String minYear = (searchParameter.getMinYear() != null) ? searchParameter.getMinYear().toString() : messageProvider.getMessage("notification.no_entered", language);
+        String maxYear = (searchParameter.getMaxYear() != null) ? searchParameter.getMaxYear().toString() : messageProvider.getMessage("notification.no_entered", language);
+
+
+        String text = messageProvider.getMessage("entered_search_params", language) + ": \n" +
+                "- " + messageProvider.getMessage("notification.make", language) + ": " + make + "\n" +
+                "- " + messageProvider.getMessage("notification.model", language) + ": " + model + "\n" +
+                "- " + messageProvider.getMessage("notification.min_price", language) + ": " + minPrice + "\n" +
+                "- " + messageProvider.getMessage("notification.max_price", language) + ": " + maxPrice + "\n" +
+                "- " + messageProvider.getMessage("notification.max_year", language) + ": " + maxYear + "\n" +
+                "- " + messageProvider.getMessage("notification.min_year", language) + ": " + minYear + "\n";
+
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setText(text);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
 
     private SendMessageDTO getDeleteMessage(Long chatId, Language language) {
         List<SearchParameter> searchParameterList = searchParameterService.getSearchParameter(chatId);
@@ -435,27 +494,36 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
             buttons[i] = new KeyboardButtonDTO[1];
             float multiplication = 1.0F;
             for (int j = 0; j < 1; j++) {
+                Locale loc = null;
                 switch (searchParameterList.get(i + j).getCurrency()) {
                     case AZN:
+                        loc = new Locale("az", "AZ");
                         multiplication *= Float.parseFloat(azn);
                         break;
                     case EUR:
+                        loc = Locale.FRANCE;
                         multiplication *= Float.parseFloat(euro);
                         break;
                     case USD:
+                        loc = new Locale("en", "US");
                         multiplication *= Float.parseFloat(usd);
                         break;
                 }
+                java.util.Currency javaCurrency = java.util.Currency.getInstance(loc);
+                NumberFormat currencyInstance = NumberFormat.getCurrencyInstance(loc);
 
                 buttons[i][j] = new KeyboardButtonDTO(searchParameterList.get(i + j).getMake()
                         + " : " +
                         searchParameterList.get(i + j).getModel()
                         + "\n"
                         + "Min : " +
-                        Float.parseFloat(searchParameterList.get(i + j).getMinPrice()) / multiplication + " " + searchParameterList.get(i + j).getCurrency()
+                        currencyInstance.format(searchParameterList.get(i + j).getMinPrice()).replaceAll("\\.00", "")
+                                .replaceAll(",00 €", "€")
+
                         + "\n"
                         + "Max : " +
-                        Float.parseFloat(searchParameterList.get(i + j).getMaxPrice()) / multiplication + " " + searchParameterList.get(i + j).getCurrency()
+                        currencyInstance.format(searchParameterList.get(i + j).getMaxPrice()).replaceAll("\\.00", "")
+                                .replaceAll(",00 €", "€")
                 );
             }
         }
@@ -603,44 +671,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setText(messageProvider.getMessage("specific_info", language));
         sendMessageDTO.setChatId(chatId);
-        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
-        return sendMessageDTO;
-    }
-
-    private SendMessageDTO getSearchParametersFinishMessage(Long chatId, Language language, Currency currency, SearchParameter searchParameter) {
-        Currency currency1 = searchParameter.getCurrency();
-        float multiplication = 1.0F;
-        switch (currency1) {
-            case AZN:
-                multiplication *= Float.parseFloat(azn);
-                break;
-            case EUR:
-                multiplication *= Float.parseFloat(euro);
-                break;
-            case USD:
-                multiplication *= Float.parseFloat(usd);
-                break;
-        }
-
-        String make = searchParameter.getMake();
-        String model = searchParameter.getModel();
-        String minPrice = (searchParameter.getMinPrice() != null) ? String.valueOf(Float.parseFloat(searchParameter.getMinPrice()) / multiplication) : messageProvider.getMessage("notification.no_entered", language);
-        String maxPrice = (searchParameter.getMaxPrice() != null) ? String.valueOf(Float.parseFloat(searchParameter.getMaxPrice()) / multiplication) : messageProvider.getMessage("notification.no_entered", language);
-        String minYear = (searchParameter.getMinYear() != null) ? searchParameter.getMinYear().toString() : messageProvider.getMessage("notification.no_entered", language);
-        String maxYear = (searchParameter.getMaxYear() != null) ? searchParameter.getMaxYear().toString() : messageProvider.getMessage("notification.no_entered", language);
-
-
-        String text = messageProvider.getMessage("entered_search_params", language) + ": \n" +
-                "- " + messageProvider.getMessage("notification.make", language) + ": " + make + "\n" +
-                "- " + messageProvider.getMessage("notification.model", language) + ": " + model + "\n" +
-                "- " + messageProvider.getMessage("notification.min_price", language) + ": " + minPrice + " " + currency + "\n" +
-                "- " + messageProvider.getMessage("notification.max_price", language) + ": " + maxPrice + " " + currency + "\n" +
-                "- " + messageProvider.getMessage("notification.max_year", language) + ": " + maxYear + "\n" +
-                "- " + messageProvider.getMessage("notification.min_year", language) + ": " + minYear + "\n";
-
-        SendMessageDTO sendMessageDTO = new SendMessageDTO();
-        sendMessageDTO.setChatId(chatId);
-        sendMessageDTO.setText(text);
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
     }

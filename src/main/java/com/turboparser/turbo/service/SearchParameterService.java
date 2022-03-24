@@ -24,6 +24,7 @@ public interface SearchParameterService {
                                                               String model,
                                                               Long minPrice,
                                                               Long maxPrice);
+
     void deleteSearchParameter(Long chatId);
 
     void deleteAllByModel(String model);
