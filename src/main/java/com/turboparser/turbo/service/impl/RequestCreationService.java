@@ -1,6 +1,7 @@
 package com.turboparser.turbo.service.impl;
 
 
+import com.turboparser.turbo.constant.Currency;
 import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.entity.MakeEntity;
 import com.turboparser.turbo.entity.ModelEntity;
@@ -12,6 +13,7 @@ import com.turboparser.turbo.repository.TurboModelRepository;
 import com.turboparser.turbo.util.CarTypeMapper;
 import com.turboparser.turbo.util.URLcreator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -38,16 +40,28 @@ public class RequestCreationService {
     @Autowired
     TurboModelRepository turboModelRepository;
 
+    @Value("${azn_fx_rate}")
+    private String azn;
+
+    @Value("${usd_fx_rate}")
+    private String usd;
+
+    @Value("${euro_fx_rate}")
+    private String euro;
+
     public List<NotificationDTO> createRequest(SearchParameter searchParameter) throws IOException, ParseException {
         MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
         String make = String.valueOf(byMake.getMakeId());
         ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
         String model = String.valueOf(byModel.getModelId());
+        float multiplication = 1;
+        multiplication = getMultiplication(multiplication, searchParameter.getCurrency(), azn, euro, usd, searchParameter);
+
 
         CarType emptyCarType = carTypeMapper.buildCar(make,
                 Objects.toString(model, ""),
-                Objects.toString(searchParameter.getMinPrice(), ""),
-                Objects.toString(searchParameter.getMaxPrice(), ""),
+                Objects.toString(searchParameter.getMinPrice()*multiplication, ""),
+                Objects.toString(searchParameter.getMaxPrice()*multiplication, ""),
                 Objects.toString(searchParameter.getMinYear(), ""),
                 Objects.toString(searchParameter.getMaxYear(), ""),
                 "", "",
@@ -60,6 +74,22 @@ public class RequestCreationService {
         } catch (NullPointerException e) {
             return null;
         }
+    }
+
+    static float getMultiplication(float multiplication, Currency currency, String azn, String euro, String usd, SearchParameter searchParameter) {
+        switch (currency) {
+            case AZN:
+                multiplication = Float.parseFloat(azn);
+                break;
+            case EUR:
+                multiplication = Float.parseFloat(euro);
+                break;
+            case USD:
+                multiplication = Float.parseFloat(usd);
+                break;
+        }
+        System.out.println("multiplication" + multiplication);
+        return multiplication;
     }
 
 

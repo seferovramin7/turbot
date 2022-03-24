@@ -282,27 +282,17 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                     return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
                 }
                 SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
-                int multiplication = 1;
+                float multiplication = 1;
                 if (chat.getCurrency() == null) {
                     chat.setCurrency(AZN);
                     chatDataService.updateChat(chat);
                 }
-                switch (chat.getCurrency()) {
-                    case AZN:
-                        multiplication *= Float.parseFloat(azn);
-                        break;
-                    case EUR:
-                        multiplication *= Float.parseFloat(euro);
-                        break;
-                    case USD:
-                        multiplication *= Float.parseFloat(usd);
-                        break;
-                }
+                multiplication = RequestCreationService.getMultiplication(multiplication, chat.getCurrency(), azn, euro, usd, searchParameter);
                 if (chat.getChatStage() == ChatStage.PRICE_MIN) {
                     searchParameter.setCurrency(chat.getCurrency());
-                    searchParameter.setMinPrice(enteredPrice * multiplication);
+                    searchParameter.setMinPrice(enteredPrice);
                 } else {
-                    searchParameter.setMaxPrice(enteredPrice * multiplication);
+                    searchParameter.setMaxPrice(enteredPrice);
                 }
                 searchParameterService.updateSearchParameter(searchParameter);
             }
