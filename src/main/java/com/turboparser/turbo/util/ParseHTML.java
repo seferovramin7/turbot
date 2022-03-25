@@ -99,6 +99,12 @@ public class ParseHTML {
                 LocalTime publishTime = LocalTime.parse(carDateString.split(" ")[2]);
                 String publishDay = carDateString.split(" ")[1];
                 Duration duration = Duration.between(publishTime, now);
+
+                System.out.println("==============================================================");
+                System.out.println(carNameString + " : " +  publishDay + " : " +  duration.toMinutes());
+                System.out.println("==============================================================");
+
+
                 if (publishDay.equals("bugün") && duration.toMinutes() <= minutes && duration.toMinutes() > 0) {
                     notificationDTO = NotificationDTO.builder()
                             .name(carNameString)
