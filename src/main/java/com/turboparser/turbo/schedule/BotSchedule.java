@@ -56,8 +56,10 @@ public class BotSchedule {
         for (SearchParameter element : archivedCars) {
             try {
                 List<NotificationDTO> responseList = requestCreationService.createRequest(element);
-                for (NotificationDTO reponse : responseList) {
-                    messageReceiverServiceImpl.sendMessage(messageReceiverServiceImpl.getNewCarMessage(element.getChat().getChatId(), reponse.toString()));
+                for (NotificationDTO response : responseList) {
+                    messageReceiverServiceImpl
+                            .sendMessage(messageReceiverServiceImpl
+                                    .getNewCarMessage(element.getChat().getChatId(), response.toString()));
                 }
             } catch (NullPointerException e) {
                 System.out.println("No any cars of this type : " + element.toString());

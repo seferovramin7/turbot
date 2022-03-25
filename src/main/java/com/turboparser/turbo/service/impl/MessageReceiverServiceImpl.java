@@ -45,15 +45,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     @Value("${telegram.bot.name}")
     private String botName;
 
-    @Value("${azn_fx_rate}")
-    private String azn;
-
-    @Value("${usd_fx_rate}")
-    private String usd;
-
-    @Value("${euro_fx_rate}")
-    private String euro;
-
     private Long offset = null;
 
     public MessageReceiverServiceImpl(HttpRequestService httpRequestService,
@@ -229,16 +220,16 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
             String model = parts[1].split("Min")[0].trim();
             Long minPrice = Long.parseLong(((parts[2].split("Max")[0])
                     .replaceAll("\\.00", "")
-                    .replaceAll(",","")
+                    .replaceAll(",", "")
                     .replaceAll("[ €$AZN]", "").trim()));
             Long maxPrice = Long.parseLong(parts[3]
                     .replaceAll("\\.00", "")
-                    .replaceAll(",","")
+                    .replaceAll(",", "")
                     .replaceAll("[ €$AZN]", "").trim());
             System.out.println("minPrice :" + minPrice);
             System.out.println("maxPrice :" + maxPrice);
-            System.out.println(chatId + " : " +  make + " : " +  model
-                    + " : " +  minPrice + " : " +  maxPrice);
+            System.out.println(chatId + " : " + make + " : " + model
+                    + " : " + minPrice + " : " + maxPrice);
             searchParameterService.deleteSearchParameterByMakeAndModelAndMinAndMaxPrice(chatId, make, model, minPrice, maxPrice);
             chat.setChatStage(ChatStage.NONE);
             chat = chatDataService.updateChat(chat);
@@ -273,7 +264,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         } else if (chat.getChatStage() == ChatStage.PRICE_MIN || chat.getChatStage() == ChatStage.PRICE_MAX) {
             // check if this parameter was skipped
             if (!text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
-                Long enteredPrice = 0L;
+                long enteredPrice = 0L;
                 try {
                     enteredPrice = Long.parseLong(text);
                 } catch (NumberFormatException ex) {
@@ -282,12 +273,10 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                     return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
                 }
                 SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
-                float multiplication = 1;
                 if (chat.getCurrency() == null) {
                     chat.setCurrency(AZN);
                     chatDataService.updateChat(chat);
                 }
-                multiplication = RequestCreationService.getMultiplication(multiplication, chat.getCurrency(), azn, euro, usd, searchParameter);
                 if (chat.getChatStage() == ChatStage.PRICE_MIN) {
                     searchParameter.setCurrency(chat.getCurrency());
                     searchParameter.setMinPrice(enteredPrice);
@@ -330,7 +319,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                     chat = chatDataService.updateChat(chat);
                     if (searchParameter == null)
                         searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
-                    sendMessage(getSearchParametersFinishMessage(chatId, chat.getLanguage(), chat.getCurrency(), searchParameter));
+                    sendMessage(getSearchParametersFinishMessage(chatId, chat.getLanguage(), searchParameter));
                 } catch (NumberFormatException ex) {
                     log.error("Incorrect price. Entered value: " + text);
                     sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
@@ -428,7 +417,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         specificVehicleRepository.save(newSpecificVehicleSearchParameter);
     }
 
-    private SendMessageDTO getSearchParametersFinishMessage(Long chatId, Language language, Currency currency, SearchParameter searchParameter) {
+    private SendMessageDTO getSearchParametersFinishMessage(Long chatId, Language language, SearchParameter searchParameter) {
         Currency currency1 = searchParameter.getCurrency();
         Locale loc;
         switch (currency1) {
@@ -482,22 +471,20 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[searchParameterList.size()][];
         for (int i = 0; i < searchParameterList.size(); i++) {
             buttons[i] = new KeyboardButtonDTO[1];
-            float multiplication = 1.0F;
             for (int j = 0; j < 1; j++) {
-                Locale loc = null;
+                Locale loc;
                 switch (searchParameterList.get(i + j).getCurrency()) {
                     case AZN:
                         loc = new Locale("az", "AZ");
-                        multiplication *= Float.parseFloat(azn);
                         break;
                     case EUR:
                         loc = Locale.FRANCE;
-                        multiplication *= Float.parseFloat(euro);
                         break;
                     case USD:
                         loc = new Locale("en", "US");
-                        multiplication *= Float.parseFloat(usd);
                         break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + searchParameterList.get(i + j).getCurrency());
                 }
                 java.util.Currency javaCurrency = java.util.Currency.getInstance(loc);
                 NumberFormat currencyInstance = NumberFormat.getCurrencyInstance(loc);
