@@ -101,7 +101,7 @@ public class ParseHTML {
                 Duration duration = Duration.between(publishTime, now);
 
                 System.out.println("==============================================================");
-                System.out.println(carNameString + " : " +  publishDay + " : " +  duration.toMinutes());
+                System.out.println(carNameString + " : " +  publishDay + " : " +  duration.toMinutes()  + " : " +  minutes);
                 System.out.println("==============================================================");
 
 
