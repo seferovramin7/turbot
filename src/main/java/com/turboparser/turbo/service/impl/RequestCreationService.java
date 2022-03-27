@@ -90,7 +90,6 @@ public class RequestCreationService {
             } catch (NullPointerException e) {
                 return null;
             }
-        } else {
         }
         return null;
     }

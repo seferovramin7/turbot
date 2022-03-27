@@ -65,7 +65,7 @@ public class BotSchedule {
                     SendMessageResponseDTO sendMessageResponseDTO = messageReceiverServiceImpl.sendMessage(messageReceiverServiceImpl
                             .getNewCarMessage(element.getChat().getChatId(), response.toString()));
                     if (sendMessageResponseDTO.getOk()){
-                        if (element.getChat().getReqLimit() != 0 || element.getChat().getReqLimit() != null){
+                        if (element.getChat().getReqLimit() > 0 || element.getChat().getReqLimit() != null){
                             Chat chat = element.getChat();
                             chat.setReqLimit(element.getChat().getReqLimit() - 1);
                             element.setChat(chat);
