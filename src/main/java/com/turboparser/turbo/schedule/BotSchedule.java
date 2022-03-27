@@ -1,11 +1,14 @@
 package com.turboparser.turbo.schedule;
 
+import com.turboparser.turbo.dto.telegram.send.SendMessageResponseDTO;
 import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramUpdateDTO;
+import com.turboparser.turbo.entity.Chat;
 import com.turboparser.turbo.entity.SearchParameter;
 import com.turboparser.turbo.entity.SpecificVehicleSearchParameter;
 import com.turboparser.turbo.repository.SearchParameterRepository;
 import com.turboparser.turbo.repository.SpecificVehicleRepository;
+import com.turboparser.turbo.service.ChatDataService;
 import com.turboparser.turbo.service.impl.RequestCreationService;
 import com.turboparser.turbo.service.MessageReceiverService;
 import com.turboparser.turbo.service.impl.MessageReceiverServiceImpl;
@@ -25,6 +28,7 @@ import java.util.List;
 public class BotSchedule {
 
     private final MessageReceiverService messageReceiverService;
+    private final ChatDataService chatDataService;
     private final SearchParameterRepository searchParameterRepository;
     private final RequestCreationService requestCreationService;
     private final MessageReceiverServiceImpl messageReceiverServiceImpl;
@@ -33,8 +37,9 @@ public class BotSchedule {
     private String turboLink;
 
     public BotSchedule(
-            MessageReceiverService messageReceiverService, SearchParameterRepository searchParameterRepository, RequestCreationService requestCreationService, MessageReceiverServiceImpl messageReceiverServiceImpl, SpecificVehicleRepository specificVehicleRepository) {
+            MessageReceiverService messageReceiverService, ChatDataService chatDataService, SearchParameterRepository searchParameterRepository, RequestCreationService requestCreationService, MessageReceiverServiceImpl messageReceiverServiceImpl, SpecificVehicleRepository specificVehicleRepository) {
         this.messageReceiverService = messageReceiverService;
+        this.chatDataService = chatDataService;
         this.searchParameterRepository = searchParameterRepository;
         this.requestCreationService = requestCreationService;
         this.messageReceiverServiceImpl = messageReceiverServiceImpl;
@@ -57,9 +62,16 @@ public class BotSchedule {
             try {
                 List<NotificationDTO> responseList = requestCreationService.createRequest(element);
                 for (NotificationDTO response : responseList) {
-                    messageReceiverServiceImpl
-                            .sendMessage(messageReceiverServiceImpl
-                                    .getNewCarMessage(element.getChat().getChatId(), response.toString()));
+                    SendMessageResponseDTO sendMessageResponseDTO = messageReceiverServiceImpl.sendMessage(messageReceiverServiceImpl
+                            .getNewCarMessage(element.getChat().getChatId(), response.toString()));
+                    if (sendMessageResponseDTO.getOk()){
+                        if (element.getChat().getReqLimit() != 0 || element.getChat().getReqLimit() != null){
+                            Chat chat = element.getChat();
+                            chat.setReqLimit(element.getChat().getReqLimit() - 1);
+                            element.setChat(chat);
+                            chatDataService.updateChat(chat);
+                        }
+                    }
                 }
             } catch (NullPointerException e) {
                 System.out.println("No any cars of this type : " + element.toString());

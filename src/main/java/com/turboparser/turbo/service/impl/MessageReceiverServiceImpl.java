@@ -91,7 +91,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     public SendMessageResponseDTO sendMessage(SendMessageDTO sendMessageDTO) {
         String url = telegramApiBaseUrl + "/bot" + botToken + "/sendMessage";
         SendMessageResponseDTO sendMessageResponseDTO = httpRequestService.sendPostRequest(url, sendMessageDTO, SendMessageResponseDTO.class);
-        System.out.println("sendMessageResponseDTO" + sendMessageResponseDTO);
         return sendMessageResponseDTO;
     }
 
@@ -611,7 +610,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         return sendMessageDTO;
     }
 
-    public SendMessageDTO getNewCarMessage(Long chatId, String text) {
+    public SendMessageDTO  getNewCarMessage(Long chatId, String text) {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(text);
