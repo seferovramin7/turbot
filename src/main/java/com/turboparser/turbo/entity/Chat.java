@@ -16,6 +16,9 @@ public class Chat {
     @Column(name = "CHAT_ID")
     private Long chatId;
 
+    @Column(name = "REQUEST_LIMIT")
+    private Integer reqLimit = 0;
+
     @Column(name = "TYPE", length = 15)
     private String type;
 

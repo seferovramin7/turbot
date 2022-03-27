@@ -90,7 +90,9 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     @Override
     public SendMessageResponseDTO sendMessage(SendMessageDTO sendMessageDTO) {
         String url = telegramApiBaseUrl + "/bot" + botToken + "/sendMessage";
-        return httpRequestService.sendPostRequest(url, sendMessageDTO, SendMessageResponseDTO.class);
+        SendMessageResponseDTO sendMessageResponseDTO = httpRequestService.sendPostRequest(url, sendMessageDTO, SendMessageResponseDTO.class);
+        System.out.println("sendMessageResponseDTO" + sendMessageResponseDTO);
+        return sendMessageResponseDTO;
     }
 
     @Override
@@ -112,6 +114,12 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         Long messageId = telegramUpdateDTO.getMessageDTO().getMessageId();
         Chat chat = chatDataService.getChatByChatId(chatId);
 
+
+        if (text.equals("/active")) {
+            sendMessage(getActiveNotifications(chatId,chat.getLanguage(), chat.getReqLimit()));
+            chat.setChatStage(ChatStage.NONE);
+            chat = chatDataService.updateChat(chat);
+        }
 
         if (text.equals("/language")) {
             sendMessage(getLanguageChoiceMessage(chatId));
@@ -534,6 +542,14 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setText(messageProvider.getMessage("new_specific_info", language) + "\n" +
                 newSpecificVehicleSearchParameter.getGeneralInfo());
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    private SendMessageDTO getActiveNotifications(Long chatId, Language language, Integer limit) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setText(messageProvider.getMessage("active_info", language) + limit);
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;

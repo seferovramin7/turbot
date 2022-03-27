@@ -49,33 +49,6 @@ public class RequestCreationService {
     @Value("${euro_fx_rate}")
     private String euro;
 
-    public List<NotificationDTO> createRequest(SearchParameter searchParameter) throws IOException, ParseException {
-        MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
-        String make = String.valueOf(byMake.getMakeId());
-        ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
-        String model = String.valueOf(byModel.getModelId());
-        float multiplication = 1;
-        multiplication = getMultiplication(multiplication, searchParameter.getCurrency(), azn, euro, usd, searchParameter);
-
-
-        CarType emptyCarType = carTypeMapper.buildCar(make,
-                Objects.toString(model, ""),
-                Objects.toString(searchParameter.getMinPrice()*multiplication, ""),
-                Objects.toString(searchParameter.getMaxPrice()*multiplication, ""),
-                Objects.toString(searchParameter.getMinYear(), ""),
-                Objects.toString(searchParameter.getMaxYear(), ""),
-                "", "",
-                "", "",
-                "", "");
-        String url = urLcreator.createUrl(emptyCarType);
-        try {
-            List<NotificationDTO> notificationDTOList = restService.generalRestService(url);
-            return notificationDTOList;
-        } catch (NullPointerException e) {
-            return null;
-        }
-    }
-
     static float getMultiplication(float multiplication, Currency currency, String azn, String euro, String usd, SearchParameter searchParameter) {
         switch (currency) {
             case AZN:
@@ -92,6 +65,35 @@ public class RequestCreationService {
         return multiplication;
     }
 
+    public List<NotificationDTO> createRequest(SearchParameter searchParameter) throws IOException, ParseException {
+        if (searchParameter.getChat().getReqLimit() != null || searchParameter.getChat().getReqLimit() > 0) {
+            MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
+            String make = String.valueOf(byMake.getMakeId());
+            ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
+            String model = String.valueOf(byModel.getModelId());
+            float multiplication = 1;
+            multiplication = getMultiplication(multiplication, searchParameter.getCurrency(), azn, euro, usd, searchParameter);
+
+            CarType emptyCarType = carTypeMapper.buildCar(make,
+                    Objects.toString(model, ""),
+                    Objects.toString(searchParameter.getMinPrice() * multiplication, ""),
+                    Objects.toString(searchParameter.getMaxPrice() * multiplication, ""),
+                    Objects.toString(searchParameter.getMinYear(), ""),
+                    Objects.toString(searchParameter.getMaxYear(), ""),
+                    "", "",
+                    "", "",
+                    "", "");
+            String url = urLcreator.createUrl(emptyCarType);
+            try {
+                List<NotificationDTO> notificationDTOList = restService.generalRestService(url);
+                return notificationDTOList;
+            } catch (NullPointerException e) {
+                return null;
+            }
+        } else {
+        }
+        return null;
+    }
 
     public SpecificVehicleSearchParameter createSpecificRequest(String link) throws IOException, ParseException {
         SpecificVehicleSearchParameter specificVehicleSearchParameter = restService.specificRestService("https://turbo.az/autos/" + link);

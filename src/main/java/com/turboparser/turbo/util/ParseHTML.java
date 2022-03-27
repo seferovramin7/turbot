@@ -100,11 +100,6 @@ public class ParseHTML {
                 String publishDay = carDateString.split(" ")[1];
                 Duration duration = Duration.between(publishTime, now);
 
-                System.out.println("==============================================================");
-                System.out.println(carNameString + " : " + carInfoString + " : " + publishDay + " : " +  duration.toMinutes()  + " : " +  minutes);
-                System.out.println("==============================================================");
-
-
                 if (publishDay.equals("bugün") && duration.toMinutes() <= minutes && duration.toMinutes() > 0) {
                     notificationDTO = NotificationDTO.builder()
                             .name(carNameString)
@@ -113,8 +108,6 @@ public class ParseHTML {
                             .link(lotLink)
                             .build();
                     notificationDTOList.add(notificationDTO);
-                    String s = notificationDTO.toString();
-                    dBactions.insertOrIgnoreDB(lotLink, carPriceTotal);
                 }
             }
             return notificationDTOList;
@@ -138,7 +131,6 @@ public class ParseHTML {
             String modelValue = element.attr("value");
             String markaName = element.html();
 
-//            System.out.println("Marka : " + markaName + " , MarkaId : " + modelValue);
             if (!modelValue.equals("")) {
                 MakeEntity makeEntity = MakeEntity.builder().make(markaName).makeId(Integer.parseInt(modelValue)).build();
                 dBactions.updateMakeTable(makeEntity);
@@ -148,7 +140,6 @@ public class ParseHTML {
             for (Element modelElement : modelOptions) {
                 if (modelElement.attr("class").equals(modelValue)) {
                     String model = modelElement.html();
-//                    System.out.println("Model : " + model+ " , MarkaId : " + modelValue);
                     Integer modelInt = 0;
                     if (!modelValue.equals("")) {
                         try {
