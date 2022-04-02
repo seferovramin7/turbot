@@ -29,9 +29,9 @@ public class AliveController {
     private void restTest() {
         String result = restTemplate.getForObject(url, String.class);
         if (result.equals("alive")){
-            String telegramResult = "https://api.telegram.org/bot5026223660:AAEq6dd8V2AwOKTvYhbTkhilHJE59ZaZ8cc/sendMessage?chat_id=508914176&text=";
-            telegramResult += result;
-            restTemplate.getForObject(telegramResult, String.class);
+//            String telegramResult = "https://api.telegram.org/bot5026223660:AAEq6dd8V2AwOKTvYhbTkhilHJE59ZaZ8cc/sendMessage?chat_id=508914176&text=";
+//            telegramResult += result;
+//            restTemplate.getForObject(telegramResult, String.class);
         }
     }
 }
