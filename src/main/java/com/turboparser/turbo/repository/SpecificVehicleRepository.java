@@ -13,6 +13,5 @@ public interface SpecificVehicleRepository extends JpaRepository<SpecificVehicle
     SpecificVehicleSearchParameter findByChat_ChatIdAndLotId(Long chatId ,Long lotId);
     SpecificVehicleSearchParameter findByChat_ChatIdAndGeneralInfo(Long chatId ,String generalInfo);
     List<SpecificVehicleSearchParameter> findAllByChat_ChatId(Long chatId);
-
     List<SpecificVehicleSearchParameter> findAllByLotId(Long lotId);
 }

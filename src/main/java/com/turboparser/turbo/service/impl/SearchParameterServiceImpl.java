@@ -59,7 +59,7 @@ public class SearchParameterServiceImpl implements SearchParameterService {
         searchParameterRepository.deleteAllByModel(model);
     }
 
-      @Override
+    @Override
     public void deleteSearchParameterByMakeAndModelAndMinAndMaxPrice(Long chatId,
                                                                      String make,
                                                                      String model,

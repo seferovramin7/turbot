@@ -9,9 +9,9 @@ import com.turboparser.turbo.entity.SpecificVehicleSearchParameter;
 import com.turboparser.turbo.repository.SearchParameterRepository;
 import com.turboparser.turbo.repository.SpecificVehicleRepository;
 import com.turboparser.turbo.service.ChatDataService;
-import com.turboparser.turbo.service.impl.RequestCreationService;
 import com.turboparser.turbo.service.MessageReceiverService;
 import com.turboparser.turbo.service.impl.MessageReceiverServiceImpl;
+import com.turboparser.turbo.service.impl.RequestCreationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -64,8 +64,8 @@ public class BotSchedule {
                 for (NotificationDTO response : responseList) {
                     SendMessageResponseDTO sendMessageResponseDTO = messageReceiverServiceImpl.sendMessage(messageReceiverServiceImpl
                             .getNewCarMessage(element.getChat().getChatId(), response.toString()));
-                    if (sendMessageResponseDTO.getOk()){
-                        if (element.getChat().getReqLimit() > 0 || element.getChat().getReqLimit() != null){
+                    if (sendMessageResponseDTO.getOk()) {
+                        if (element.getChat().getReqLimit() > 0 || element.getChat().getReqLimit() != null) {
                             Chat chat = element.getChat();
                             chat.setReqLimit(element.getChat().getReqLimit() - 1);
                             element.setChat(chat);
@@ -84,26 +84,26 @@ public class BotSchedule {
         List<SpecificVehicleSearchParameter> archivedCars = specificVehicleRepository.findAll();
         for (SpecificVehicleSearchParameter element : archivedCars) {
             try {
-            SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(element.getLotId().toString());
-            if (newSpecificVehicleSearchParameter == null) {
-                messageReceiverServiceImpl.sendMessage(
-                        messageReceiverServiceImpl.getNoAnyCarFoundMessage(element.getChat().getChatId(), element.getChat().getLanguage(), element.getGeneralInfo()));
-            } else {
-                List<SpecificVehicleSearchParameter> allByLotId = specificVehicleRepository.findAllByLotId(element.getLotId());
-                SpecificVehicleSearchParameter oldSpecificVehicleSearchParameter = allByLotId.get(allByLotId.size() - 1);
-                Long chatId = oldSpecificVehicleSearchParameter.getChat().getChatId();
-                if (!oldSpecificVehicleSearchParameter.getPrice().equals(newSpecificVehicleSearchParameter.getPrice())
-                        ||
-                        !oldSpecificVehicleSearchParameter.getGeneralInfo().equals(newSpecificVehicleSearchParameter.getGeneralInfo())
-                ) {
+                SpecificVehicleSearchParameter newSpecificVehicleSearchParameter = requestCreationService.createSpecificRequest(element.getLotId().toString());
+                if (newSpecificVehicleSearchParameter == null) {
                     messageReceiverServiceImpl.sendMessage(
-                            messageReceiverServiceImpl.getChangedSpecificCarMessage(element.getChat().getChatId(),
-                                    newSpecificVehicleSearchParameter,
-                                    oldSpecificVehicleSearchParameter,
-                                    element.getChat().getLanguage()));
-                    messageReceiverServiceImpl.saveSpecialCarUpdateToDB(newSpecificVehicleSearchParameter, chatId);
+                            messageReceiverServiceImpl.getNoAnyCarFoundMessage(element.getChat().getChatId(), element.getChat().getLanguage(), element.getGeneralInfo()));
+                } else {
+                    List<SpecificVehicleSearchParameter> allByLotId = specificVehicleRepository.findAllByLotId(element.getLotId());
+                    SpecificVehicleSearchParameter oldSpecificVehicleSearchParameter = allByLotId.get(allByLotId.size() - 1);
+                    Long chatId = oldSpecificVehicleSearchParameter.getChat().getChatId();
+                    if (!oldSpecificVehicleSearchParameter.getPrice().equals(newSpecificVehicleSearchParameter.getPrice())
+                            ||
+                            !oldSpecificVehicleSearchParameter.getGeneralInfo().equals(newSpecificVehicleSearchParameter.getGeneralInfo())
+                    ) {
+                        messageReceiverServiceImpl.sendMessage(
+                                messageReceiverServiceImpl.getChangedSpecificCarMessage(element.getChat().getChatId(),
+                                        newSpecificVehicleSearchParameter,
+                                        oldSpecificVehicleSearchParameter,
+                                        element.getChat().getLanguage()));
+                        messageReceiverServiceImpl.saveSpecialCarUpdateToDB(newSpecificVehicleSearchParameter, chatId);
+                    }
                 }
-            }
             } catch (NullPointerException e) {
                 System.out.println("No any cars of this type : " + element.toString());
             }

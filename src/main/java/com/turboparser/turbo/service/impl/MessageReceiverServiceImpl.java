@@ -273,6 +273,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
             if (!text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
                 long enteredPrice = 0L;
                 try {
+                    text = text.replaceAll("[^0-9]", "");
                     enteredPrice = Long.parseLong(text);
                 } catch (NumberFormatException ex) {
                     log.error("Incorrect price. Entered value: " + enteredPrice);
