@@ -12,6 +12,8 @@ import com.turboparser.turbo.dto.telegram.update.TelegramResponseDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramUpdateDTO;
 import com.turboparser.turbo.entity.*;
 import com.turboparser.turbo.repository.SpecificVehicleRepository;
+import com.turboparser.turbo.repository.TurboMakeRepository;
+import com.turboparser.turbo.repository.TurboModelRepository;
 import com.turboparser.turbo.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +39,9 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     private final SearchParameterService searchParameterService;
     private final RequestCreationService requestCreationService;
     private final SpecificVehicleRepository specificVehicleRepository;
+    private final TurboMakeRepository makeRepository;
+    private final TurboModelRepository modelRepository;
+
 
     @Value("${telegram.api.base-url}")
     private String telegramApiBaseUrl;
@@ -54,7 +59,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                                       ModelService modelService,
                                       SearchParameterService searchParameterService,
                                       RequestCreationService requestCreationService,
-                                      SpecificVehicleRepository specificVehicleRepository) {
+                                      SpecificVehicleRepository specificVehicleRepository, TurboMakeRepository makeRepository, TurboModelRepository modelRepository) {
         this.httpRequestService = httpRequestService;
         this.chatDataService = chatDataService;
         this.messageProvider = messageProvider;
@@ -63,6 +68,8 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         this.searchParameterService = searchParameterService;
         this.requestCreationService = requestCreationService;
         this.specificVehicleRepository = specificVehicleRepository;
+        this.makeRepository = makeRepository;
+        this.modelRepository = modelRepository;
     }
 
     @Override
@@ -115,7 +122,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
 
 
         if (text.equals("/active")) {
-            sendMessage(getActiveNotifications(chatId,chat.getLanguage(), chat.getReqLimit()));
+            sendMessage(getActiveNotifications(chatId, chat.getLanguage(), chat.getReqLimit()));
             chat.setChatStage(ChatStage.NONE);
             chat = chatDataService.updateChat(chat);
         }
@@ -249,19 +256,26 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         }
         // Make select
         else if (chat.getChatStage() == ChatStage.CAR_MAKE) {
-            MakeEntity make = makeService.getMakeByMakeName(text);
-            int makeId = make.getMakeId();
-            SearchParameter searchParameter = new SearchParameter();
-            searchParameter.setChat(chat);
-            searchParameter.setMessageId(messageId);
-            searchParameter.setMake(make.getMake());
-            searchParameterService.saveSearchParameter(searchParameter);
-            chat.setChatStage(ChatStage.CAR_MODEL);
-            chatDataService.updateChat(chat);
-            return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
+            MakeEntity byMake = makeRepository.findByMake(text);
+            if (byMake == null){
+                sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
+                return sendMessage(getMakeChoiceMessage(chatId, chat.getLanguage()));
+            }else {
+                MakeEntity make = makeService.getMakeByMakeName(text);
+                int makeId = make.getMakeId();
+                SearchParameter searchParameter = new SearchParameter();
+                searchParameter.setChat(chat);
+                searchParameter.setMessageId(messageId);
+                searchParameter.setMake(make.getMake());
+                searchParameterService.saveSearchParameter(searchParameter);
+                chat.setChatStage(ChatStage.CAR_MODEL);
+                chatDataService.updateChat(chat);
+                return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
+            }
         }
         // Car Model
         else if (chat.getChatStage() == ChatStage.CAR_MODEL) {
+
             SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
             searchParameter.setModel(text);
             searchParameterService.updateSearchParameter(searchParameter);
@@ -277,7 +291,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                     enteredPrice = Long.parseLong(text);
                 } catch (NumberFormatException ex) {
                     log.error("Incorrect price. Entered value: " + enteredPrice);
-                    sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
+                    sendMessage(getInvalidMakeErrorMessage(chatId, chat.getLanguage()));
                     return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
                 }
                 SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
@@ -307,6 +321,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                 long enteredNumber;
                 try {
                     SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
+                    text = text.replaceAll("[^0-9]", "");
                     if (chat.getChatStage() == ChatStage.YEAR_MIN) {
                         enteredNumber = Long.parseLong(text);
                         searchParameter.setMinYear(enteredNumber);
@@ -611,7 +626,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         return sendMessageDTO;
     }
 
-    public SendMessageDTO  getNewCarMessage(Long chatId, String text) {
+    public SendMessageDTO getNewCarMessage(Long chatId, String text) {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(text);
@@ -655,6 +670,14 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(messageProvider.getMessage("invalid_number_info", language));
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    private SendMessageDTO getInvalidMakeErrorMessage(Long chatId, Language language) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setText(messageProvider.getMessage("invalid_make_info", language));
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
     }
