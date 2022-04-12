@@ -258,7 +258,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         else if (chat.getChatStage() == ChatStage.CAR_MAKE) {
             MakeEntity byMake = makeRepository.findByMake(text);
             if (byMake == null){
-                sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
+                sendMessage(getInvalidMakeErrorMessage(chatId, chat.getLanguage()));
                 return sendMessage(getMakeChoiceMessage(chatId, chat.getLanguage()));
             }else {
                 MakeEntity make = makeService.getMakeByMakeName(text);
