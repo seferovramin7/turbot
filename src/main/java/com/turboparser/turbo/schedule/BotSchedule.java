@@ -80,6 +80,16 @@ public class BotSchedule {
     }
 
     @Scheduled(fixedRateString = "${task.update-cars.rate}")
+    public void deleteRecords() throws IOException, ParseException {
+        List<SearchParameter> all = searchParameterRepository.findAll();
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getCurrency() == null) {
+                searchParameterRepository.delete(all.get(i));
+            }
+        }
+    }
+
+    @Scheduled(fixedRateString = "${task.update-cars.rate}")
     public void checkForSpecificUpdates() throws IOException, ParseException {
         List<SpecificVehicleSearchParameter> archivedCars = specificVehicleRepository.findAll();
         for (SpecificVehicleSearchParameter element : archivedCars) {
