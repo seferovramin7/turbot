@@ -1,9 +1,7 @@
 package com.turboparser.turbo.schedule;
 
-import com.turboparser.turbo.dto.telegram.send.SendMessageResponseDTO;
 import com.turboparser.turbo.dto.telegram.send.text.NotificationDTO;
 import com.turboparser.turbo.dto.telegram.update.TelegramUpdateDTO;
-import com.turboparser.turbo.entity.Chat;
 import com.turboparser.turbo.entity.SearchParameter;
 import com.turboparser.turbo.entity.SpecificVehicleSearchParameter;
 import com.turboparser.turbo.repository.SearchParameterRepository;
@@ -62,16 +60,16 @@ public class BotSchedule {
             try {
                 List<NotificationDTO> responseList = requestCreationService.createRequest(element);
                 for (NotificationDTO response : responseList) {
-                    SendMessageResponseDTO sendMessageResponseDTO = messageReceiverServiceImpl.sendMessage(messageReceiverServiceImpl
+                    messageReceiverServiceImpl.sendMessage(messageReceiverServiceImpl
                             .getNewCarMessage(element.getChat().getChatId(), response.toString()));
-                    if (sendMessageResponseDTO.getOk()) {
-                        if (element.getChat().getReqLimit() > 0 || element.getChat().getReqLimit() != null) {
-                            Chat chat = element.getChat();
-                            chat.setReqLimit(element.getChat().getReqLimit() - 1);
-                            element.setChat(chat);
-                            chatDataService.updateChat(chat);
-                        }
-                    }
+//                    if (sendMessageResponseDTO.getOk()) {
+//                        if (element.getChat().getReqLimit() > 0 || element.getChat().getReqLimit() != null) {
+//                            Chat chat = element.getChat();
+//                            chat.setReqLimit(element.getChat().getReqLimit() - 1);
+//                            element.setChat(chat);
+//                            chatDataService.updateChat(chat);
+//                        }
+//                    }
                 }
             } catch (NullPointerException e) {
                 System.out.println("No any cars of this type : " + element.toString());
