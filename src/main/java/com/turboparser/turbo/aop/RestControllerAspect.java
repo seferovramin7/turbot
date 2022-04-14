@@ -30,8 +30,7 @@ public class RestControllerAspect {
 
     @Pointcut("within(com.turboparser.turbo.service..*) " +
             "&& @annotation(org.springframework.web.bind.annotation.RequestMapping)")
-    public void pointcut() {
-    }
+    public void pointcut() {}
 
     @Before("pointcut()")
     public void logMethod(JoinPoint joinPoint) {
