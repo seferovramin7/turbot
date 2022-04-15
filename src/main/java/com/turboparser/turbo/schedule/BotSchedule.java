@@ -77,7 +77,7 @@ public class BotSchedule {
         }
     }
 
-    @Scheduled(fixedRateString = "99999")
+//    @Scheduled(fixedRateString = "99999")
     public void deleteRecords() throws IOException, ParseException {
         List<SearchParameter> all = searchParameterRepository.findAll();
         System.out.println("-------------------------------------------------------");
