@@ -435,7 +435,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     private SendMessageDTO getSearchParametersFinishMessage(Long chatId, Language language, SearchParameter searchParameter) {
         Currency currency = searchParameter.getCurrency();
         currency = currency == null ? AZN : currency;
-
         Locale loc;
         switch (currency) {
             case AZN:
