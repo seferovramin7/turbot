@@ -454,14 +454,14 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
 
         String make = searchParameter.getMake();
         String model = searchParameter.getModel();
-        String minPrice = (searchParameter.getMinPrice() != 0) ? currencyInstance.format((searchParameter.getMinPrice()))
+        String minPrice =  currencyInstance.format((searchParameter.getMinPrice()))
                 .replaceAll("\\.00", "")
                 .replaceAll(",00 €", "€")
                 .replaceAll("[AZN$]]", "")
-                : messageProvider.getMessage("notification.no_entered", language);
-        String maxPrice = (searchParameter.getMaxPrice() != 0) ? currencyInstance.format((searchParameter.getMaxPrice()))
+                ;
+        String maxPrice =  currencyInstance.format((searchParameter.getMaxPrice()))
                 .replaceAll("\\.00", "")
-                .replaceAll(",00 €", "€") : messageProvider.getMessage("notification.no_entered", language);
+                .replaceAll(",00 €", "€") ;
         String minYear = (searchParameter.getMinYear() != null) ? searchParameter.getMinYear().toString() : messageProvider.getMessage("notification.no_entered", language);
         String maxYear = (searchParameter.getMaxYear() != null) ? searchParameter.getMaxYear().toString() : messageProvider.getMessage("notification.no_entered", language);
 
