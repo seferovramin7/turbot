@@ -256,11 +256,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         }
         // Make select
         else if (chat.getChatStage() == ChatStage.CAR_MAKE) {
-            MakeEntity byMake = makeRepository.findByMake(text);
-            if (byMake == null) {
-                sendMessage(getInvalidMakeErrorMessage(chatId, chat.getLanguage()));
-                return sendMessage(getMakeChoiceMessage(chatId, chat.getLanguage()));
-            } else {
                 MakeEntity make = makeService.getMakeByMakeName(text);
                 int makeId = make.getMakeId();
                 SearchParameter searchParameter = new SearchParameter();
@@ -272,7 +267,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                 chatDataService.updateChat(chat);
                 return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
             }
-        }
         // Car Model
         else if (chat.getChatStage() == ChatStage.CAR_MODEL) {
 
