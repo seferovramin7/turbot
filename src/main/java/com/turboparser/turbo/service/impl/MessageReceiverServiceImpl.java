@@ -589,7 +589,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     }
 
     private SendMessageDTO getPriceQuestionMessage(Long chatId, Language language, boolean isLowPriceQuestion) {
-        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        SendMessageDTO sendMessageDTO = getSkippableQuestion(language);
         sendMessageDTO.setChatId(chatId);
         if (isLowPriceQuestion)
             sendMessageDTO.setText(messageProvider.getMessage("question_min_price", language));
@@ -599,7 +599,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     }
 
     private SendMessageDTO getYearQuestionMessage(Long chatId, Language language, boolean isLowYearQuestion) {
-        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        SendMessageDTO sendMessageDTO = getSkippableQuestion(language);
         sendMessageDTO.setChatId(chatId);
         if (isLowYearQuestion)
             sendMessageDTO.setText(messageProvider.getMessage("question_min_year", language));
