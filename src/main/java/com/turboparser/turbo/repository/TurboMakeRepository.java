@@ -12,7 +12,7 @@ public interface TurboMakeRepository extends JpaRepository<MakeEntity, Long>, Jp
     @Override
     List<MakeEntity> findAll();
 
-     MakeEntity  findByMakeContaining(String make);
+     MakeEntity  findByMake(String make);
 
 
     MakeEntity getByMake(String make);
