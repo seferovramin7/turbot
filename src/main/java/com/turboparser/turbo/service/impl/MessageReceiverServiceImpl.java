@@ -52,6 +52,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     private String botName;
 
     private Long offset = null;
+    private Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     public MessageReceiverServiceImpl(HttpRequestService httpRequestService,
                                       ChatDataService chatDataService,
@@ -256,17 +257,17 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         }
         // Make select
         else if (chat.getChatStage() == ChatStage.CAR_MAKE) {
-                MakeEntity make = makeService.getMakeByMakeName(text);
-                int makeId = make.getMakeId();
-                SearchParameter searchParameter = new SearchParameter();
-                searchParameter.setChat(chat);
-                searchParameter.setMessageId(messageId);
-                searchParameter.setMake(make.getMake());
-                searchParameterService.saveSearchParameter(searchParameter);
-                chat.setChatStage(ChatStage.CAR_MODEL);
-                chatDataService.updateChat(chat);
-                return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
-            }
+            MakeEntity make = makeService.getMakeByMakeName(text);
+            int makeId = make.getMakeId();
+            SearchParameter searchParameter = new SearchParameter();
+            searchParameter.setChat(chat);
+            searchParameter.setMessageId(messageId);
+            searchParameter.setMake(make.getMake());
+            searchParameterService.saveSearchParameter(searchParameter);
+            chat.setChatStage(ChatStage.CAR_MODEL);
+            chatDataService.updateChat(chat);
+            return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
+        }
         // Car Model
         else if (chat.getChatStage() == ChatStage.CAR_MODEL) {
 
@@ -365,7 +366,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         return sendMessageDTO;
     }
 
-
     private SendMessageDTO getCurrencyChoiceMessage(Long chatId, Language language) {
         // prepare keyboard
         KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[2][];
@@ -405,7 +405,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         return sendMessageDTO;
     }
 
-
     private SendMessageDTO getModelChoiceMessage(Long chatId, Language language, int makeId) {
         int columnSize = 1;
         List<ModelEntity> modelList = modelService.getModelList(makeId);
@@ -434,9 +433,11 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     }
 
     private SendMessageDTO getSearchParametersFinishMessage(Long chatId, Language language, SearchParameter searchParameter) {
-        Currency currency1 = searchParameter.getCurrency();
+        Currency currency = searchParameter.getCurrency();
+        currency = currency == null ? AZN : currency;
+
         Locale loc;
-        switch (currency1) {
+        switch (currency) {
             case AZN:
                 loc = new Locale("az", "AZ");
                 break;
@@ -447,7 +448,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                 loc = new Locale("en", "US");
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + currency1);
+                throw new IllegalStateException("Unexpected value: " + currency);
         }
         java.util.Currency javaCurrency = java.util.Currency.getInstance(loc);
         NumberFormat currencyInstance = NumberFormat.getCurrencyInstance(loc);
@@ -480,7 +481,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
     }
-
 
     private SendMessageDTO getDeleteMessage(Long chatId, Language language) {
         List<SearchParameter> searchParameterList = searchParameterService.getSearchParameter(chatId);
@@ -665,7 +665,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         return sendMessageDTO;
     }
 
-
     private SendMessageDTO getSpecificInfoMessage(Long chatId, Language language) {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setText(messageProvider.getMessage("specific_info", language));
@@ -674,7 +673,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         return sendMessageDTO;
     }
 
-    private Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
     public boolean isNumeric(String strNum) {
         if (strNum == null) {
             return false;
