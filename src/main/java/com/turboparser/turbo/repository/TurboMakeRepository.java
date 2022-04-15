@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TurboMakeRepository extends JpaRepository<MakeEntity, Long>, JpaSpecificationExecutor<MakeEntity> {
+public interface TurboMakeRepository extends JpaRepository<MakeEntity, Long> {
     @Override
     List<MakeEntity> findAll();
 
