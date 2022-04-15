@@ -589,8 +589,9 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     }
 
     private SendMessageDTO getPriceQuestionMessage(Long chatId, Language language, boolean isLowPriceQuestion) {
-        SendMessageDTO sendMessageDTO = getSkippableQuestion(language);
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         if (isLowPriceQuestion)
             sendMessageDTO.setText(messageProvider.getMessage("question_min_price", language));
         else
