@@ -24,6 +24,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import static com.turboparser.turbo.constant.Currency.*;
 
@@ -180,7 +181,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
             chat = chatDataService.updateChat(chat);
         }
 
-
         if (text.equals("/new_car")) {
             chat.setChatStage(ChatStage.SPECIFIC);
             chat = chatDataService.updateChat(chat);
@@ -277,7 +277,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
             chatDataService.updateChat(chat);
             return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
         } else if (chat.getChatStage() == ChatStage.PRICE_MIN || chat.getChatStage() == ChatStage.PRICE_MAX) {
-            // check if this parameter was skipped
             if (!text.equals("0")) {
                 long enteredPrice = 0L;
                 try {
@@ -600,24 +599,13 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
     }
 
     private SendMessageDTO getYearQuestionMessage(Long chatId, Language language, boolean isLowYearQuestion) {
-        SendMessageDTO sendMessageDTO = getSkippableQuestion(language);
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         if (isLowYearQuestion)
             sendMessageDTO.setText(messageProvider.getMessage("question_min_year", language));
         else
             sendMessageDTO.setText(messageProvider.getMessage("question_max_year", language));
-        return sendMessageDTO;
-    }
-
-    private SendMessageDTO getSkippableQuestion(Language language) {
-        KeyboardButtonDTO[][] buttons = new KeyboardButtonDTO[1][1];
-        buttons[0][0] = new KeyboardButtonDTO(messageProvider.getMessage("skip_button", language));
-        ReplyKeyboardMarkupDTO replyKeyboard = new ReplyKeyboardMarkupDTO();
-        replyKeyboard.setOneTimeKeyboard(true);
-        replyKeyboard.setKeyboardButtonArray(buttons);
-
-        SendMessageDTO sendMessageDTO = new SendMessageDTO();
-        sendMessageDTO.setReplyKeyboard(replyKeyboard);
         return sendMessageDTO;
     }
 
@@ -684,6 +672,14 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
+    }
+
+    private Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+    public boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        return pattern.matcher(strNum).matches();
     }
 
 }
