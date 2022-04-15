@@ -278,7 +278,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
             return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
         } else if (chat.getChatStage() == ChatStage.PRICE_MIN || chat.getChatStage() == ChatStage.PRICE_MAX) {
             // check if this parameter was skipped
-            if (!text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
+            if (!text.equals("0")) {
                 long enteredPrice = 0L;
                 try {
                     text = text.replaceAll("[^0-9]", "");
@@ -311,7 +311,7 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                 return sendMessage(getYearQuestionMessage(chatId, chat.getLanguage(), true));
             }
         } else if (chat.getChatStage() == ChatStage.YEAR_MIN || chat.getChatStage() == ChatStage.YEAR_MAX) {
-            if (!text.equals(messageProvider.getMessage("skip_button", chat.getLanguage()))) {
+            if (!text.equals("0")) {
                 long enteredNumber;
                 try {
                     SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
