@@ -56,6 +56,6 @@ public class ModelServiceImpl implements ModelService {
 
     @Override
     public ModelEntity getModelByModelName(String modelName) {
-        return modelRepository.getByModel(modelName);
+        return modelRepository.getByModelIgnoreCase(modelName);
     }
 }

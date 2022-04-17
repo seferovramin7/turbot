@@ -25,7 +25,7 @@ public class AliveController {
         return "alive";
     }
 
-    @Scheduled(fixedRateString = "${heroku.keep.alive.rate}")
+//    @Scheduled(fixedRateString = "${heroku.keep.alive.rate}")
     private void restTest() {
         String result = restTemplate.getForObject(url, String.class);
         if (result.equals("alive")){

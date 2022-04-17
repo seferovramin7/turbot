@@ -46,12 +46,6 @@ public class SearchParameterServiceImpl implements SearchParameterService {
         return searchParameterRepository.save(searchParameter);
     }
 
-    @Override
-    public void deleteSearchParameter(Long chatId) {
-        SearchParameter searchParameter = searchParameterRepository.getSearchParameterByChatId(chatId);
-        if (searchParameter != null)
-            searchParameterRepository.delete(searchParameter);
-    }
 
     @Override
     @Transactional
@@ -76,11 +70,5 @@ public class SearchParameterServiceImpl implements SearchParameterService {
             searchParameterRepository.delete(searchParameter);
     }
 
-    @Override
-    public void deleteSpecialSearchParameterByLotId(Long chatId, Long lotId) {
-        SpecificVehicleSearchParameter byChat_chatIdAndLotId = specificVehicleRepository.findByChat_ChatIdAndLotId(chatId, lotId);
-        if (byChat_chatIdAndLotId != null)
-            specificVehicleRepository.delete(byChat_chatIdAndLotId);
-    }
 
 }

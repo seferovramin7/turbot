@@ -67,9 +67,9 @@ public class RequestCreationService {
 
     public List<NotificationDTO> createRequest(SearchParameter searchParameter) throws IOException, ParseException {
         if (searchParameter.getChat().getReqLimit() != null || searchParameter.getChat().getReqLimit() > 0) {
-            MakeEntity byMake = turboMakeRepository.getByMake(searchParameter.getMake());
+            MakeEntity byMake = turboMakeRepository.getByMakeIgnoreCase(searchParameter.getMake());
             String make = String.valueOf(byMake.getMakeId());
-            ModelEntity byModel = turboModelRepository.getByModel(searchParameter.getModel());
+            ModelEntity byModel = turboModelRepository.getByModelIgnoreCase(searchParameter.getModel());
             String model = String.valueOf(byModel.getModelId());
             float multiplication = 1;
             multiplication = getMultiplication(multiplication, searchParameter.getCurrency(), azn, euro, usd, searchParameter);

@@ -257,35 +257,52 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         }
         // Make select
         else if (chat.getChatStage() == ChatStage.CAR_MAKE) {
-            MakeEntity make = makeService.getMakeByMakeName(text);
-            int makeId = make.getMakeId();
-            SearchParameter searchParameter = new SearchParameter();
-            searchParameter.setChat(chat);
-            searchParameter.setMessageId(messageId);
-            searchParameter.setMake(make.getMake());
-            searchParameterService.saveSearchParameter(searchParameter);
-            chat.setChatStage(ChatStage.CAR_MODEL);
-            chatDataService.updateChat(chat);
-            return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
+            if (makeRepository.getByMakeIgnoreCase(text) != null) {
+                MakeEntity make = makeService.getMakeByMakeName(text);
+                int makeId = make.getMakeId();
+                SearchParameter searchParameter = new SearchParameter();
+                searchParameter.setChat(chat);
+                searchParameter.setMessageId(messageId);
+                searchParameter.setMake(make.getMake());
+                searchParameterService.saveSearchParameter(searchParameter);
+                chat.setChatStage(ChatStage.CAR_MODEL);
+                chatDataService.updateChat(chat);
+                return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
+            }
+            sendMessage(getInvalidMakeErrorMessage(chatId, chat.getLanguage()));
+            return sendMessage(getMakeChoiceMessage(chatId, chat.getLanguage()));
+
         }
         // Car Model
         else if (chat.getChatStage() == ChatStage.CAR_MODEL) {
+            if (modelRepository.getByModelIgnoreCase(text) != null) {
+                System.out.println("---------------");
+                System.out.println(modelRepository.getByModelIgnoreCase(text));
+                System.out.println("---------------");
 
-            SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
-            searchParameter.setModel(text);
-            searchParameterService.updateSearchParameter(searchParameter);
-            chat.setChatStage(ChatStage.PRICE_MIN);
-            chatDataService.updateChat(chat);
-            return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
+                SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
+                searchParameter.setModel(text);
+                searchParameterService.updateSearchParameter(searchParameter);
+                chat.setChatStage(ChatStage.PRICE_MIN);
+                chatDataService.updateChat(chat);
+                return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
+            } else {
+                sendMessage(getInvalidModelErrorMessage(chatId, chat.getLanguage()));
+                String make = searchParameterService.getSearchParameterByMaxMessageId(chatId).getMake();
+                int makeId = makeRepository.getByMakeIgnoreCase(make).getMakeId();
+                return sendMessage(getModelChoiceMessage(chatId, chat.getLanguage(), makeId));
+
+            }
+
+
         } else if (chat.getChatStage() == ChatStage.PRICE_MIN || chat.getChatStage() == ChatStage.PRICE_MAX) {
-            if (!text.equals("0")) {
                 long enteredPrice = 0L;
                 try {
                     text = text.replaceAll("[^0-9]", "");
                     enteredPrice = Long.parseLong(text);
                 } catch (NumberFormatException ex) {
                     log.error("Incorrect price. Entered value: " + enteredPrice);
-                    sendMessage(getInvalidMakeErrorMessage(chatId, chat.getLanguage()));
+                    sendMessage(getInvalidNumberErrorMessage(chatId, chat.getLanguage()));
                     return sendMessage(getPriceQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.PRICE_MIN));
                 }
                 SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
@@ -297,10 +314,10 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                     searchParameter.setCurrency(chat.getCurrency());
                     searchParameter.setMinPrice(enteredPrice);
                 } else {
+                    searchParameter.setCurrency(chat.getCurrency());
                     searchParameter.setMaxPrice(enteredPrice);
                 }
                 searchParameterService.updateSearchParameter(searchParameter);
-            }
             if (chat.getChatStage() == ChatStage.PRICE_MIN) {
                 chat.setChatStage(ChatStage.PRICE_MAX);
                 chatDataService.updateChat(chat);
@@ -311,7 +328,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                 return sendMessage(getYearQuestionMessage(chatId, chat.getLanguage(), true));
             }
         } else if (chat.getChatStage() == ChatStage.YEAR_MIN || chat.getChatStage() == ChatStage.YEAR_MAX) {
-            if (!text.equals("0")) {
                 long enteredNumber;
                 try {
                     SearchParameter searchParameter = searchParameterService.getSearchParameterByMaxMessageId(chatId);
@@ -343,7 +359,6 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
                     chat.setChatStage(ChatStage.YEAR_MAX);
                     return sendMessage(getYearQuestionMessage(chatId, chat.getLanguage(), chat.getChatStage() == ChatStage.YEAR_MIN));
                 }
-            }
         }
         return null;
     }
@@ -454,16 +469,28 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
 
         String make = searchParameter.getMake();
         String model = searchParameter.getModel();
-        String minPrice =  currencyInstance.format((searchParameter.getMinPrice()))
-                .replaceAll("\\.00", "")
-                .replaceAll(",00 €", "€")
-                .replaceAll("[AZN$]]", "")
-                ;
-        String maxPrice =  currencyInstance.format((searchParameter.getMaxPrice()))
-                .replaceAll("\\.00", "")
-                .replaceAll(",00 €", "€") ;
-        String minYear = (searchParameter.getMinYear() != null) ? searchParameter.getMinYear().toString() : messageProvider.getMessage("notification.no_entered", language);
-        String maxYear = (searchParameter.getMaxYear() != null) ? searchParameter.getMaxYear().toString() : messageProvider.getMessage("notification.no_entered", language);
+
+        String minPrice;
+        String maxPrice;
+        String minYear;
+        String maxYear;
+        try {
+            minPrice = currencyInstance.format((searchParameter.getMinPrice()))
+                    .replaceAll("\\.00", "")
+                    .replaceAll(",00 €", "€")
+                    .replaceAll("[AZN$]]", "");
+            maxPrice = currencyInstance.format((searchParameter.getMaxPrice()))
+                    .replaceAll("\\.00", "")
+                    .replaceAll(",00 €", "€");
+            minYear = (searchParameter.getMinYear() != null) ? searchParameter.getMinYear().toString() : messageProvider.getMessage("notification.no_entered", language);
+            maxYear = (searchParameter.getMaxYear() != null) ? searchParameter.getMaxYear().toString() : messageProvider.getMessage("notification.no_entered", language);
+
+        } catch (IllegalArgumentException e) {
+            maxPrice = "Daxil edilməyib";
+            minPrice = "Daxil edilməyib";
+            minYear = "Daxil edilməyib";
+            maxYear = "Daxil edilməyib";
+        }
 
 
         String text = messageProvider.getMessage("entered_search_params", language) + ": \n" +
@@ -660,6 +687,14 @@ public class MessageReceiverServiceImpl implements MessageReceiverService {
         SendMessageDTO sendMessageDTO = new SendMessageDTO();
         sendMessageDTO.setChatId(chatId);
         sendMessageDTO.setText(messageProvider.getMessage("invalid_make_info", language));
+        sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
+        return sendMessageDTO;
+    }
+
+    private SendMessageDTO getInvalidModelErrorMessage(Long chatId, Language language) {
+        SendMessageDTO sendMessageDTO = new SendMessageDTO();
+        sendMessageDTO.setChatId(chatId);
+        sendMessageDTO.setText(messageProvider.getMessage("invalid_model_info", language));
         sendMessageDTO.setReplyKeyboard(new ReplyKeyboardRemoveDTO(true));
         return sendMessageDTO;
     }

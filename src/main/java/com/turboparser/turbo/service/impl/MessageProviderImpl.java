@@ -18,7 +18,7 @@ public class MessageProviderImpl implements MessageProvider {
 
     @Override
     public String getMessage(String message, Language language) {
-        String langName = "null";
+        String langName = "az";
         if (language != null)
             langName = language.name();
         return messageSource.getMessage(message, null, new Locale(langName));

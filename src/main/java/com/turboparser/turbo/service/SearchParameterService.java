@@ -18,18 +18,12 @@ public interface SearchParameterService {
 
     SearchParameter updateSearchParameter(SearchParameter searchParameter);
 
-
     void deleteSearchParameterByMakeAndModelAndMinAndMaxPrice(Long chatId,
                                                               String make,
                                                               String model,
                                                               Long minPrice,
                                                               Long maxPrice);
 
-    void deleteSearchParameter(Long chatId);
-
     void deleteAllByModel(String model);
-
-    void deleteSpecialSearchParameterByLotId(Long chatId, Long lotId);
-
 
 }

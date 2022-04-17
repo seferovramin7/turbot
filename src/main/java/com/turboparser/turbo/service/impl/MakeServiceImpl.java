@@ -54,6 +54,6 @@ public class MakeServiceImpl implements MakeService {
 
     @Override
     public MakeEntity getMakeByMakeName(String makeName) {
-        return makeRepository.getByMake(makeName);
+        return makeRepository.getByMakeIgnoreCase(makeName);
     }
 }

@@ -119,14 +119,14 @@ public class ParseHTML {
 
     public void parseMakeAndModel(String rawHTML) {
         Document doc = Jsoup.parse(rawHTML);
-        Elements make = doc.getElementsByClass("input select optional q_make");
+        Elements make = doc.getElementsByClass("select optional js-search-select-make");
         String allMake = make.first().html();
 
         Document document = Jsoup.parse(allMake);
-        Elements options = document.select("select > option");
+        Elements options = document.select("option");
 
         for (Element element : options) {
-            Elements models = doc.getElementsByClass("input string optional q_model");
+            Elements models = doc.getElementsByClass("js-search-select-model");
             String allModels = models.first().html();
             String modelValue = element.attr("value");
             String markaName = element.html();
@@ -136,7 +136,7 @@ public class ParseHTML {
                 dBactions.updateMakeTable(makeEntity);
             }
             Document modelDoc = Jsoup.parse(allModels);
-            Elements modelOptions = modelDoc.select("select > option");
+            Elements modelOptions = modelDoc.select("option");
             for (Element modelElement : modelOptions) {
                 if (modelElement.attr("class").equals(modelValue)) {
                     String model = modelElement.html();

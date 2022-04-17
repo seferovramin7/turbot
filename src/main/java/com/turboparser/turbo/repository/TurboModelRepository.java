@@ -12,7 +12,7 @@ public interface TurboModelRepository extends JpaRepository<ModelEntity, Long> {
     @Override
     List<ModelEntity> findAll();
 
-    ModelEntity getByModel(String model);
+    ModelEntity getByModelIgnoreCase(String model);
 
     List<ModelEntity> getAllByMakeId(int makeId);
 
