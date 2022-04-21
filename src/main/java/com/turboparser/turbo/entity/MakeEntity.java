@@ -29,7 +29,7 @@ public class MakeEntity {
     @Override
     public String toString() {
         return "MakeEntity{" +
-                "id=" + id +
+                "id= " + id +
                 ", make='" + make + '\'' +
                 ", makeId=" + makeId +
                 '}';
